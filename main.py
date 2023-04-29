@@ -36,6 +36,14 @@ renderer = vtk.vtkRenderer()
 renderer_window = vtk.vtkRenderWindow()
 # VTK renderer_window_interactor.
 interactor = vtk.vtkRenderWindowInteractor()
+# VTK transverse plan widget.
+transverse_widget = vtk.vtkImagePlaneWidget()
+# VTK coronal plan widget.
+coronal_widget = vtk.vtkImagePlaneWidget()
+# VTK coronal sagittal widget.
+sagittal_widget = vtk.vtkImagePlaneWidget()
+# VTK isosurface
+iso = vtk.vtkMarchingCubes()
 
 # Lista que armazena os itk datasets.
 dataSets = []
@@ -76,42 +84,65 @@ def writeItkImage(itkImage):
 
 def displayVtkFile(vtkDir):
 
-    # Read the source file.
     vtkReader.SetFileName(vtkDir)
-    # vtkReader.ReadAllScalarsOn()  # Activate the reading of all scalars
-    # vtkReader.ReadAllVectorsOn()  # Activate the reading of all vectors
-    # vtkReader.ReadAllTensorsOn()  # Activate the reading of all tensors
-    vtkReader.Update()  # Needed because of GetScalarRange
-    output = vtkReader.GetOutput()
-    scalar_range = output.GetScalarRange()
+    vtkReader.Update()
 
-    # Create the mapper that corresponds the objects of the vtk file
-    mapper.SetInputData(output)
-    mapper.SetScalarRange(scalar_range)
-    # mapper.ScalarVisibilityOff()
+    iso.SetInputConnection(vtkReader.GetOutputPort())
+    iso.SetValue(0, 1)
 
-    # Create the Actor
+    # Map the surface to graphics primitives
+    mapper.SetInputConnection(iso.GetOutputPort())
+
+    # Create an actor to represent the surface
     actor.SetMapper(mapper)
-    actor.GetProperty().EdgeVisibilityOn()
-    actor.GetProperty().SetLineWidth(2.0)
-    # actor.GetProperty().SetColor(colors.GetColor3d("MistyRose"))
 
-    # backface = vtk.vtkProperty()
-    # backface.SetColor(colors.GetColor3d('Tomato'))
-    # actor.SetBackfaceProperty(backface)
-
-    # Create the Renderer
-    renderer.AddActor(actor)
-    renderer.SetBackground(colors.GetColor3d('Wheat'))
-
-    # Create the RendererWindow
-    renderer_window.SetSize(640, 480)
+    # Define the rendering window
     renderer_window.AddRenderer(renderer)
-    renderer_window.SetWindowName('ReadVtkFile')
+    renderer.SetBackground(0.1, 0.2, 0.4)
 
-    # Create the RendererWindowInteractor and display the vtk_file
+    # Define the interactor
     interactor.SetRenderWindow(renderer_window)
-    interactor.Initialize()
+
+    # Define the image plane widgets for sagittal, coronal and transverse orientations
+    sagittal_widget.SetInteractor(interactor)
+    sagittal_widget.RestrictPlaneToVolumeOn()
+    sagittal_widget.SetInputConnection(vtkReader.GetOutputPort())
+    sagittal_widget.SetPlaneOrientationToXAxes()
+    sagittal_widget.SetSliceIndex(32)
+    sagittal_widget.DisplayTextOn()
+    sagittal_widget.SetDefaultRenderer(renderer)
+    sagittal_widget.SetTexturePlaneProperty(actor.GetProperty())
+    sagittal_widget.TextureInterpolateOff()
+    sagittal_widget.SetPicker(None)
+    sagittal_widget.On()
+
+    coronal_widget.SetInteractor(interactor)
+    coronal_widget.RestrictPlaneToVolumeOn()
+    coronal_widget.SetInputConnection(vtkReader.GetOutputPort())
+    coronal_widget.SetPlaneOrientationToYAxes()
+    coronal_widget.SetSliceIndex(32)
+    coronal_widget.DisplayTextOn()
+    coronal_widget.SetDefaultRenderer(renderer)
+    coronal_widget.SetTexturePlaneProperty(actor.GetProperty())
+    coronal_widget.TextureInterpolateOff()
+    coronal_widget.SetPicker(None)
+    coronal_widget.On()
+
+    transverse_widget.SetInteractor(interactor)
+    transverse_widget.RestrictPlaneToVolumeOn()
+    transverse_widget.SetInputConnection(vtkReader.GetOutputPort())
+    transverse_widget.SetPlaneOrientationToZAxes()
+    transverse_widget.SetSliceIndex(50)
+    transverse_widget.DisplayTextOn()
+    transverse_widget.SetDefaultRenderer(renderer)
+    transverse_widget.SetTexturePlaneProperty(actor.GetProperty())
+    transverse_widget.TextureInterpolateOff()
+    transverse_widget.SetPicker(None)
+    transverse_widget.On()
+
+    # Initialize the interactor and start the rendering loop
+    renderer_window.SetSize(800, 800)
+    renderer_window.Render()
     interactor.Start()
 
 if __name__ == "__main__":
@@ -120,4 +151,4 @@ if __name__ == "__main__":
     carregarDataSets()
     binaryThresholdFun(dataSets[0], 2)
     writeItkImage(binaryThreshold.GetOutput())
-    displayVtkFile(os.path.join(DiretoriaItkOutput, "output.vtk"))
+    displayVtkFile(DiretoriasDataSets[0])
