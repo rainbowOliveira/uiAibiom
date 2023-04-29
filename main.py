@@ -103,12 +103,12 @@ def displayVtkFile(vtkDir):
     # Define the interactor
     interactor.SetRenderWindow(renderer_window)
 
-    # Define the image plane widgets for sagittal, coronal and transverse orientations
+    # Sagital
     sagittal_widget.SetInteractor(interactor)
     sagittal_widget.RestrictPlaneToVolumeOn()
     sagittal_widget.SetInputConnection(vtkReader.GetOutputPort())
     sagittal_widget.SetPlaneOrientationToXAxes()
-    sagittal_widget.SetSliceIndex(32)
+    sagittal_widget.SetSliceIndex(100)
     sagittal_widget.DisplayTextOn()
     sagittal_widget.SetDefaultRenderer(renderer)
     sagittal_widget.SetTexturePlaneProperty(actor.GetProperty())
@@ -116,6 +116,7 @@ def displayVtkFile(vtkDir):
     sagittal_widget.SetPicker(None)
     sagittal_widget.On()
 
+    # Tranversal
     coronal_widget.SetInteractor(interactor)
     coronal_widget.RestrictPlaneToVolumeOn()
     coronal_widget.SetInputConnection(vtkReader.GetOutputPort())
@@ -128,11 +129,12 @@ def displayVtkFile(vtkDir):
     coronal_widget.SetPicker(None)
     coronal_widget.On()
 
+    # Coronal
     transverse_widget.SetInteractor(interactor)
     transverse_widget.RestrictPlaneToVolumeOn()
     transverse_widget.SetInputConnection(vtkReader.GetOutputPort())
     transverse_widget.SetPlaneOrientationToZAxes()
-    transverse_widget.SetSliceIndex(50)
+    transverse_widget.SetSliceIndex(100)
     transverse_widget.DisplayTextOn()
     transverse_widget.SetDefaultRenderer(renderer)
     transverse_widget.SetTexturePlaneProperty(actor.GetProperty())
