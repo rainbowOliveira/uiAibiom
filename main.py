@@ -326,12 +326,64 @@ def change_slice_transverse(obj, event):
                 print(key)
 
 
+def menuPrincipal():
+
+    print("\nMenu Principal - 1")
+    print("1 - BH0017")
+    print("2 - BH0030")
+    op = input("Escolha um dataset: ")
+
+    return op
+
+
+def menuLabel():
+
+    print("\nMenu de Labeling - 2")
+    print("1 - Cérebro")
+    print("2 - Cerebelo")
+    print("3 - Tronco Cerebral")
+    print("4 - Corpo Caloso")
+    print("5 - Fórnix")
+    print("6 - Tálamus")
+    print("7 - Mid Brain")
+    print("8 - Pons")
+    print("9 - Medula")
+    print("10 - Ventrículos Laterais")
+    print("11 - Terceiro Ventrículo")
+    print("12 - Quarto Ventrículo")
+    op = input("Selecione uma label: ")
+
+    return op
+
+
+def menuPlano():
+
+    print("\nMenu de seleção do plano - 3")
+    print("1 - Sagital")
+    print("2 - Coronal")
+    print("3 - Transversal")
+    op = input("Selecione um plano: ")
+
+    return op
+
 if __name__ == "__main__":
 
     carregarDiretoriasDataSets()
     carregarDataSets()
-    #binaryThresholdFun(dataSets[0], 2)
-    #writeItkImage(binaryThreshold.GetOutput())
-    #displayVtkFileSagittal(DiretoriasDataSets[0])
-    #displayVtkFileCoronal(DiretoriasDataSets[0])
-    displayVtkFileTransverse(DiretoriasDataSets[0])
+
+    while True:
+
+        dataset = int(menuPrincipal()) - 1
+        label = int(menuLabel())
+        plano = int(menuPlano())
+
+        binaryThresholdFun(dataSets[dataset], label)
+        writeItkImage(binaryThreshold.GetOutput())
+
+        match plano:
+            case 1:
+                displayVtkFileSagittal(os.path.join(DiretoriaItkOutput, "output.vtk"))
+            case 2:
+                displayVtkFileCoronal(os.path.join(DiretoriaItkOutput, "output.vtk"))
+            case 3:
+                displayVtkFileTransverse(os.path.join(DiretoriaItkOutput, "output.vtk"))
