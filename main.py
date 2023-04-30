@@ -18,32 +18,12 @@ ImageType = itk.Image[PixelType, Dimension]
 itkReader = itk.ImageFileReader[ImageType].New()
 # ITK Image writer.
 writer = itk.ImageFileWriter[ImageType].New()
-# VTK Image reader.
-vtkReader = vtk.vtkStructuredPointsReader()
 
 # ITK filters.
 binaryThreshold = itk.BinaryThresholdImageFilter[ImageType, ImageType].New()
 
 # VTK colours.
 colors = vtk.vtkNamedColors()
-# VTK transverse plan widget.
-transverse_widget = vtk.vtkImagePlaneWidget()
-# VTK coronal plan widget.
-coronal_widget = vtk.vtkImagePlaneWidget()
-# VTK coronal sagittal widget.
-sagittal_widget = vtk.vtkImagePlaneWidget()
-# VTK isosurface
-iso = vtk.vtkMarchingCubes()
-# VTK renderer_window_interactor.
-interactor = vtk.vtkRenderWindowInteractor()
-# VTK renderer.
-renderer = vtk.vtkRenderer()
-# VTK renderer_window.
-renderer_window = vtk.vtkRenderWindow()
-# VTK camera.
-camera = vtk.vtkCamera()
-# VTK dataset dims.
-vtkDims = []
 
 # Initial Sagittal Slice.
 sagittalSlice = 0
@@ -97,20 +77,28 @@ def writeItkImage(itkImage):
 def displayVtkFileSagittal(vtkDir):
 
     global vtkDims
-
+    # VTK Image reader.
+    vtkReader = vtk.vtkStructuredPointsReader()
+    renderer = vtk.vtkRenderer()
+    renderer_window = vtk.vtkRenderWindow()
+    # VTK coronal sagittal widget.
+    sagittal_widget = vtk.vtkImagePlaneWidget()
+    # VTK isosurface
+    iso = vtk.vtkMarchingCubes()
+    # VTK renderer_window_interactor.
+    interactor = vtk.vtkRenderWindowInteractor()
     # VTK mapper.
     mapper = vtk.vtkDataSetMapper()
     # VTK actor.
     actor = vtk.vtkActor()
+    # VTK dataset dims.
+    vtkDims = []
 
     vtkReader.SetFileName(vtkDir)
     vtkReader.Update()
 
     # Get the dims of the data
     vtkDims = vtkReader.GetOutput().GetDimensions()
-    print(range(vtkDims[0]))
-    print(range(vtkDims[1]))
-    print(range(vtkDims[2]))
 
     iso.SetInputConnection(vtkReader.GetOutputPort())
     iso.SetValue(0, 1)
@@ -143,7 +131,8 @@ def displayVtkFileSagittal(vtkDir):
     sagittal_widget.On()
 
     # Bind the key press event to the interactor
-    interactor.AddObserver(vtk.vtkCommand.KeyPressEvent, change_slice_sagittal)
+    change_slice_sagittal_func = change_slice_sagittal(renderer_window, sagittal_widget)
+    interactor.AddObserver(vtk.vtkCommand.KeyPressEvent, change_slice_sagittal_func)
 
     # Initialize the interactor and start the rendering loop
     renderer_window.Render()
@@ -152,20 +141,28 @@ def displayVtkFileSagittal(vtkDir):
 def displayVtkFileCoronal(vtkDir):
 
     global vtkDims
-
+    # VTK Image reader.
+    vtkReader = vtk.vtkStructuredPointsReader()
+    renderer = vtk.vtkRenderer()
+    renderer_window = vtk.vtkRenderWindow()
+    # VTK coronal plan widget.
+    coronal_widget = vtk.vtkImagePlaneWidget()
+    # VTK isosurface
+    iso = vtk.vtkMarchingCubes()
+    # VTK renderer_window_interactor.
+    interactor = vtk.vtkRenderWindowInteractor()
     # VTK mapper.
     mapper = vtk.vtkDataSetMapper()
     # VTK actor.
     actor = vtk.vtkActor()
+    # VTK dataset dims.
+    vtkDims = []
 
     vtkReader.SetFileName(vtkDir)
     vtkReader.Update()
 
     # Get the dims of the data
     vtkDims = vtkReader.GetOutput().GetDimensions()
-    print(range(vtkDims[0]))
-    print(range(vtkDims[1]))
-    print(range(vtkDims[2]))
 
     iso.SetInputConnection(vtkReader.GetOutputPort())
     iso.SetValue(0, 1)
@@ -198,7 +195,8 @@ def displayVtkFileCoronal(vtkDir):
     coronal_widget.On()
 
     # Bind the key press event to the interactor
-    interactor.AddObserver(vtk.vtkCommand.KeyPressEvent, change_slice_coronal)
+    change_slice_coronal_func = change_slice_coronal(renderer_window, coronal_widget)
+    interactor.AddObserver(vtk.vtkCommand.KeyPressEvent, change_slice_coronal_func)
 
     # Initialize the interactor and start the rendering loop
     renderer_window.Render()
@@ -207,20 +205,28 @@ def displayVtkFileCoronal(vtkDir):
 def displayVtkFileTransverse(vtkDir):
 
     global vtkDims
-
+    # VTK Image reader.
+    vtkReader = vtk.vtkStructuredPointsReader()
+    renderer = vtk.vtkRenderer()
+    renderer_window = vtk.vtkRenderWindow()
+    # VTK transverse plan widget.
+    transverse_widget = vtk.vtkImagePlaneWidget()
+    # VTK isosurface
+    iso = vtk.vtkMarchingCubes()
+    # VTK renderer_window_interactor.
+    interactor = vtk.vtkRenderWindowInteractor()
     # VTK mapper.
     mapper = vtk.vtkDataSetMapper()
     # VTK actor.
     actor = vtk.vtkActor()
+    # VTK dataset dims.
+    vtkDims = []
 
     vtkReader.SetFileName(vtkDir)
     vtkReader.Update()
 
     # Get the dims of the data
     vtkDims = vtkReader.GetOutput().GetDimensions()
-    print(range(vtkDims[0]))
-    print(range(vtkDims[1]))
-    print(range(vtkDims[2]))
 
     iso.SetInputConnection(vtkReader.GetOutputPort())
     iso.SetValue(0, 1)
@@ -253,77 +259,82 @@ def displayVtkFileTransverse(vtkDir):
     transverse_widget.On()
 
     # Bind the key press event to the interactor
-    interactor.AddObserver(vtk.vtkCommand.KeyPressEvent, change_slice_transverse)
+    change_slice_transverse_func = change_slice_transverse(renderer_window, transverse_widget)
+    interactor.AddObserver(vtk.vtkCommand.KeyPressEvent, change_slice_transverse_func)
 
     # Initialize the interactor and start the rendering loop
     renderer_window.Render()
     interactor.Start()
 
-def change_slice_sagittal(obj, event):
+def change_slice_sagittal(renderer_window, sagittal_widget):
+    def change_slice_sagittal_func(obj, event):
+        global sagittalSlice
+        global vtkDims
 
-    global sagittalSlice
-    global vtkDims
+        key = obj.GetKeySym()
 
-    key = obj.GetKeySym()
-
-    if(key == "Right"):
-        if(sagittalSlice < vtkDims[0]):
-            sagittalSlice = sagittalSlice + 1
-            sagittal_widget.SetSliceIndex(sagittalSlice)
-            renderer_window.Render()
-            print(key)
-
-    else:
-        if(key == "Left") :
-            if(sagittalSlice > 0):
-                sagittalSlice = sagittalSlice - 1
+        if (key == "Right"):
+            if (sagittalSlice < vtkDims[0]):
+                sagittalSlice = sagittalSlice + 1
                 sagittal_widget.SetSliceIndex(sagittalSlice)
                 renderer_window.Render()
                 print(key)
 
-def change_slice_coronal(obj, event):
+        else:
+            if (key == "Left"):
+                if (sagittalSlice > 0):
+                    sagittalSlice = sagittalSlice - 1
+                    sagittal_widget.SetSliceIndex(sagittalSlice)
+                    renderer_window.Render()
+                    print(key)
+    return change_slice_sagittal_func
 
-    global coronalSlice
-    global vtkDims
+def change_slice_coronal(renderer_window, coronal_widget):
+    def change_slice_coronal_func(obj, event):
+        global coronalSlice
+        global vtkDims
 
-    key = obj.GetKeySym()
+        key = obj.GetKeySym()
 
-    if(key == "Right"):
-        if(coronalSlice < vtkDims[1]):
-            coronalSlice = coronalSlice + 1
-            coronal_widget.SetSliceIndex(coronalSlice)
-            renderer_window.Render()
-            print(key)
-
-    else:
-        if(key == "Left") :
-            if(coronalSlice > 0):
-                coronalSlice = coronalSlice - 1
+        if (key == "Right"):
+            if (coronalSlice < vtkDims[1]):
+                coronalSlice = coronalSlice + 1
                 coronal_widget.SetSliceIndex(coronalSlice)
                 renderer_window.Render()
                 print(key)
 
-def change_slice_transverse(obj, event):
+        else:
+            if (key == "Left"):
+                if (coronalSlice > 0):
+                    coronalSlice = coronalSlice - 1
+                    coronal_widget.SetSliceIndex(coronalSlice)
+                    renderer_window.Render()
+                    print(key)
+    return change_slice_coronal_func
 
-    global transverseSlice
-    global vtkDims
 
-    key = obj.GetKeySym()
+def change_slice_transverse(renderer_window, transverse_widget):
+    def change_slice_transverse_func(obj, event):
+        global transverseSlice
+        global vtkDims
 
-    if(key == "Right"):
-        if(transverseSlice < vtkDims[2]):
-            transverseSlice = transverseSlice + 1
-            transverse_widget.SetSliceIndex(transverseSlice)
-            renderer_window.Render()
-            print(key)
+        key = obj.GetKeySym()
 
-    else:
-        if(key == "Left") :
-            if(transverseSlice > 0):
-                transverseSlice = transverseSlice - 1
+        if (key == "Right"):
+            if (transverseSlice < vtkDims[2]):
+                transverseSlice = transverseSlice + 1
                 transverse_widget.SetSliceIndex(transverseSlice)
                 renderer_window.Render()
                 print(key)
+
+        else:
+            if (key == "Left"):
+                if (transverseSlice > 0):
+                    transverseSlice = transverseSlice - 1
+                    transverse_widget.SetSliceIndex(transverseSlice)
+                    renderer_window.Render()
+                    print(key)
+    return change_slice_transverse_func
 
 
 def menuPrincipal():
@@ -366,6 +377,7 @@ def menuPlano():
 
     return op
 
+
 if __name__ == "__main__":
 
     carregarDiretoriasDataSets()
@@ -376,7 +388,6 @@ if __name__ == "__main__":
         dataset = int(menuPrincipal()) - 1
         label = int(menuLabel())
         plano = int(menuPlano())
-
         binaryThresholdFun(dataSets[dataset], label)
         writeItkImage(binaryThreshold.GetOutput())
 
