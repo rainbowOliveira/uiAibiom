@@ -2,6 +2,11 @@ import itk
 import vtk
 import os
 from os import listdir
+import sys
+from PyQt5.QtCore import *
+from PyQt5.QtGui import *
+from PyQt5.QtWidgets import *
+
 
 # Estrutura do projeto.
 project_dir = os.getcwd()
@@ -34,6 +39,11 @@ transverseSlice = 0
 
 # Lista que armazena os itk datasets.
 dataSets = []
+
+# Itens selecionados pelo user.
+dataset = 0
+label = 0
+plano = 0
 
 
 def carregarDiretoriasDataSets():
@@ -336,12 +346,16 @@ def change_slice_transverse(renderer_window, transverse_widget):
                     print(key)
     return change_slice_transverse_func
 
-
 def menuPrincipal():
 
+    i = 1
+
     print("\nMenu Principal - 1")
-    print("1 - BH0017")
-    print("2 - BH0030")
+
+    for diretoriaDataset in DiretoriasDataSets:
+        print(str(i) + "- " + os.path.basename(diretoriaDataset).split('/')[-1])
+        i = i+1
+
     op = input("Escolha um dataset: ")
 
     return op
