@@ -19,13 +19,8 @@ Dimension = 3
 PixelType = itk.US
 ImageType = itk.Image[PixelType, Dimension]
 
-# ITK Image reader.
-itkReader = itk.ImageFileReader[ImageType].New()
 # ITK Image writer.
 writer = itk.ImageFileWriter[ImageType].New()
-
-# ITK filters.
-binaryThreshold = itk.BinaryThresholdImageFilter[ImageType, ImageType].New()
 
 # VTK colours.
 colors = vtk.vtkNamedColors()
@@ -58,6 +53,7 @@ def carregarDataSets():
 
     # Carregam-se todos os datasets.
     for diretoriaDataSet in DiretoriasDataSets:
+        itkReader = itk.ImageFileReader[ImageType].New()
         itkReader.SetFileName(diretoriaDataSet)
         itkReader.Update()
         dataSets.append(itkReader.GetOutput())
@@ -69,12 +65,16 @@ def binaryThresholdFun(itkImage, label):
     outsideValue = 0
     insideValue = 1
 
+    # ITK filters.
+    binaryThreshold = itk.BinaryThresholdImageFilter[ImageType, ImageType].New()
     binaryThreshold.SetLowerThreshold(label)
     binaryThreshold.SetUpperThreshold(label)
     binaryThreshold.SetOutsideValue(outsideValue)
     binaryThreshold.SetInsideValue(insideValue)
     binaryThreshold.SetInput(itkImage)
     binaryThreshold.Update()
+
+    return binaryThreshold
 
 
 def writeItkImage(itkImage):
@@ -526,7 +526,7 @@ class Window(QWidget):
             plano = None
             print('No plan selected')
 
-        binaryThresholdFun(dataSets[dataset], label)
+        binaryThreshold = binaryThresholdFun(dataSets[dataset], label)
         writeItkImage(binaryThreshold.GetOutput())
 
         match plano:
