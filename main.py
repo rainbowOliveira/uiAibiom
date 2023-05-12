@@ -41,9 +41,9 @@ transverseSlice = 0
 dataSets = []
 
 # Itens selecionados pelo user.
-dataset = 0
-label = 0
-plano = 0
+dataset = None
+label = None
+plano = None
 
 
 def carregarDiretoriasDataSets():
@@ -346,62 +346,186 @@ def change_slice_transverse(renderer_window, transverse_widget):
                     print(key)
     return change_slice_transverse_func
 
-def menuPrincipal():
+class Window(QWidget):
 
-    i = 1
+    def __init__(self):
+        super().__init__()
 
-    print("\nMenu Principal - 1")
+        self.initUI()
 
-    for diretoriaDataset in DiretoriasDataSets:
-        print(str(i) + "- " + os.path.basename(diretoriaDataset).split('/')[-1])
-        i = i+1
+    def initUI(self):
 
-    op = input("Escolha um dataset: ")
+        self.numDatasets = 0
 
-    return op
+        # Set window properties
+        self.setGeometry(300, 300, 400, 200)
+        self.setWindowTitle('Análise de imagem biomédica')
 
+        self.title = QLabel('Análise de imagem biomédica', self)
+        self.title.setFont(QFont('Arial', 30))
 
-def menuLabel():
+        # Set window background color
+        self.setStyleSheet("background-color: #f0f0f0;")
 
-    print("\nMenu de Labeling - 2")
-    print("1 - Cérebro")
-    print("2 - Cerebelo")
-    print("3 - Tronco Cerebral")
-    print("4 - Corpo Caloso")
-    print("5 - Fórnix")
-    print("6 - Tálamus")
-    print("7 - Mid Brain")
-    print("8 - Pons")
-    print("9 - Medula")
-    print("10 - Ventrículos Laterais")
-    print("11 - Terceiro Ventrículo")
-    print("12 - Quarto Ventrículo")
-    op = input("Selecione uma label: ")
+        # Create labels
+        self.label = QLabel('Selecione o dataset:', self)
+        self.label.setFont(QFont('Arial', 16))
+        self.label.setStyleSheet("color: #ffffff; background-color: #333333; font-size: 16pt;")
+        self.label1 = QLabel('Selecione a label:', self)
+        self.label1.setFont(QFont('Arial', 16))
+        self.label1.setStyleSheet("color: #ffffff; background-color: #333333; font-size: 16pt;")
+        self.label2 = QLabel('Selecione o plano:', self)
+        self.label2.setFont(QFont('Arial', 16))
+        self.label2.setStyleSheet("color: #ffffff; background-color: #333333; font-size: 16pt;")
 
-    return op
+        self.cbLabel1 = QCheckBox('Cérebro', self)
+        self.cbLabel1.setFont(QFont('Arial', 12))
+        self.cbLabel2 = QCheckBox('Cerebelo', self)
+        self.cbLabel2.setFont(QFont('Arial', 12))
+        self.cbLabel3 = QCheckBox('Tronco Cerebral', self)
+        self.cbLabel3.setFont(QFont('Arial', 12))
+        self.cbLabel4 = QCheckBox('Corpo Caloso', self)
+        self.cbLabel4.setFont(QFont('Arial', 12))
+        self.cbLabel5 = QCheckBox('Fórnix', self)
+        self.cbLabel5.setFont(QFont('Arial', 12))
+        self.cbLabel6 = QCheckBox('Tálamus', self)
+        self.cbLabel6.setFont(QFont('Arial', 12))
+        self.cbLabel7 = QCheckBox('Mid Brain', self)
+        self.cbLabel7.setFont(QFont('Arial', 12))
+        self.cbLabel8 = QCheckBox('Pons', self)
+        self.cbLabel8.setFont(QFont('Arial', 12))
+        self.cbLabel9 = QCheckBox('Medula', self)
+        self.cbLabel9.setFont(QFont('Arial', 12))
+        self.cbLabel10 = QCheckBox('Ventrículos Laterais', self)
+        self.cbLabel10.setFont(QFont('Arial', 12))
+        self.cbLabel11 = QCheckBox('Terceiro Ventrículo', self)
+        self.cbLabel11.setFont(QFont('Arial', 12))
+        self.cbLabel12 = QCheckBox('Quarto Ventrículo', self)
+        self.cbLabel12.setFont(QFont('Arial', 12))
+        self.cbPlano1 = QCheckBox('Sagital', self)
+        self.cbPlano1.setFont(QFont('Arial', 12))
+        self.cbPlano2 = QCheckBox('Coronal', self)
+        self.cbPlano2.setFont(QFont('Arial', 12))
+        self.cbPlano3 = QCheckBox('Transversal', self)
+        self.cbPlano3.setFont(QFont('Arial', 12))
 
+        # Create submit button
+        submit_button = QPushButton('Submit', self)
+        submit_button.setFont(QFont('Arial', 12))
+        submit_button.setGeometry(QRect(140, 150, 120, 40))
+        submit_button.setStyleSheet("background-color: #4CAF50; color: white; border-radius: 10px; font-size: 30px;")
+        submit_button.clicked.connect(self.submit)
 
-def menuPlano():
+        # Create horizontal layout for labels
+        title_layout = QHBoxLayout()
+        title_layout.addWidget(self.title)
+        label_layout = QHBoxLayout()
+        label_layout.addWidget(self.label)
+        label_layout1 = QHBoxLayout()
+        label_layout1.addWidget(self.label1)
+        label_layout2 = QHBoxLayout()
+        label_layout2.addWidget(self.label2)
 
-    print("\nMenu de seleção do plano - 3")
-    print("1 - Sagital")
-    print("2 - Coronal")
-    print("3 - Transversal")
-    op = input("Selecione um plano: ")
+        # Create vertical layout for checkboxes, labels and submit button
+        vbox = QVBoxLayout()
+        vbox.addLayout(title_layout)
+        vbox.addLayout(label_layout)
 
-    return op
+        cont = 0
+        for diretoriaDataset in DiretoriasDataSets:
+            setattr(Window, f"attr_{'cbDataset' + str(cont+1)}", QCheckBox(os.path.basename(diretoriaDataset).split('/')[-1], self))
+            cbDataset = getattr(Window, 'attr_cbDataset' + str(cont+1))
+            cbDataset.setFont(QFont('Arial', 12))
+            vbox.addWidget(cbDataset)
+            self.numDatasets = self.numDatasets + 1
+            cont = cont + 1
 
+        vbox.addLayout(label_layout1)
+        vbox.addWidget(self.cbLabel1)
+        vbox.addWidget(self.cbLabel2)
+        vbox.addWidget(self.cbLabel3)
+        vbox.addWidget(self.cbLabel4)
+        vbox.addWidget(self.cbLabel5)
+        vbox.addWidget(self.cbLabel6)
+        vbox.addWidget(self.cbLabel7)
+        vbox.addWidget(self.cbLabel8)
+        vbox.addWidget(self.cbLabel9)
+        vbox.addWidget(self.cbLabel10)
+        vbox.addWidget(self.cbLabel11)
+        vbox.addWidget(self.cbLabel12)
+        vbox.addLayout(label_layout2)
+        vbox.addWidget(self.cbPlano1)
+        vbox.addWidget(self.cbPlano2)
+        vbox.addWidget(self.cbPlano3)
+        vbox.addWidget(submit_button)
 
-if __name__ == "__main__":
+        # Add vertical layout to grid layout
+        grid = QGridLayout()
+        grid.addLayout(vbox, 0, 0)
 
-    carregarDiretoriasDataSets()
-    carregarDataSets()
+        # Set stretch factor for row and column that contains the label
+        grid.setColumnStretch(0, 1)
+        grid.setRowStretch(1, 1)
 
-    while True:
+        # Set layout
+        self.setLayout(grid)
 
-        dataset = int(menuPrincipal()) - 1
-        label = int(menuLabel())
-        plano = int(menuPlano())
+        # Show window
+        self.show()
+
+    def submit(self):
+        global dataset
+        global label
+        global plano
+        aux = 0
+
+        for cont in range(self.numDatasets):
+            cbDataset = getattr(Window, 'attr_cbDataset' + str(cont + 1))
+            if cbDataset.isChecked():
+                dataset = cont
+                aux = aux + 1
+        if aux == 0:
+            dataset = None
+            print('No dataset selected')
+
+        if self.cbLabel1.isChecked():
+            label = 1
+        elif self.cbLabel2.isChecked():
+            label = 2
+        elif self.cbLabel3.isChecked():
+            label = 3
+        elif self.cbLabel4.isChecked():
+            label = 4
+        elif self.cbLabel5.isChecked():
+            label = 5
+        elif self.cbLabel6.isChecked():
+            label = 6
+        elif self.cbLabel7.isChecked():
+            label = 7
+        elif self.cbLabel8.isChecked():
+            label = 8
+        elif self.cbLabel9.isChecked():
+            label = 9
+        elif self.cbLabel10.isChecked():
+            label = 10
+        elif self.cbLabel11.isChecked():
+            label = 11
+        elif self.cbLabel12.isChecked():
+            label = 12
+        else:
+            label = None
+            print('No label selected')
+
+        if self.cbPlano1.isChecked():
+            plano = 1
+        elif self.cbPlano2.isChecked():
+            plano = 2
+        elif self.cbPlano3.isChecked():
+            plano = 3
+        else:
+            plano = None
+            print('No plan selected')
+
         binaryThresholdFun(dataSets[dataset], label)
         writeItkImage(binaryThreshold.GetOutput())
 
@@ -412,3 +536,12 @@ if __name__ == "__main__":
                 displayVtkFileCoronal(os.path.join(DiretoriaItkOutput, "output.vtk"))
             case 3:
                 displayVtkFileTransverse(os.path.join(DiretoriaItkOutput, "output.vtk"))
+
+if __name__ == "__main__":
+
+    carregarDiretoriasDataSets()
+    carregarDataSets()
+
+    app = QApplication(sys.argv)
+    ex = Window()
+    sys.exit(app.exec_())
