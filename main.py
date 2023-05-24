@@ -83,269 +83,6 @@ def writeItkImage(itkImage):
     writer.SetFileName(os.path.join(DiretoriaItkOutput, "output.vtk"))
     writer.Update()
 
-
-def displayVtkFileSagittal(vtkDir):
-
-    global vtkDims
-    # VTK Image reader.
-    vtkReader = vtk.vtkStructuredPointsReader()
-    renderer = vtk.vtkRenderer()
-    renderer_window = vtk.vtkRenderWindow()
-    # VTK coronal sagittal widget.
-    sagittal_widget = vtk.vtkImagePlaneWidget()
-    # VTK isosurface
-    iso = vtk.vtkMarchingCubes()
-    # VTK renderer_window_interactor.
-    interactor = vtk.vtkRenderWindowInteractor()
-    # VTK mapper.
-    mapper = vtk.vtkDataSetMapper()
-    # VTK actor.
-    actor = vtk.vtkActor()
-    # VTK dataset dims.
-    vtkDims = []
-
-    vtkReader.SetFileName(vtkDir)
-    vtkReader.Update()
-
-    # Get the dims of the data
-    vtkDims = vtkReader.GetOutput().GetDimensions()
-
-    iso.SetInputConnection(vtkReader.GetOutputPort())
-    iso.SetValue(0, 1)
-
-    # Map the surface to graphics primitives
-    mapper.SetInputConnection(iso.GetOutputPort())
-
-    # Create an actor to represent the surface
-    actor.SetMapper(mapper)
-
-    renderer.SetBackground(0.1, 0.2, 0.4)
-
-    # Define the rendering window
-    renderer_window.AddRenderer(renderer)
-    renderer_window.SetSize(800, 800)
-
-    # Define the interactor
-    interactor.SetRenderWindow(renderer_window)
-
-    sagittal_widget.SetInteractor(interactor)
-    sagittal_widget.RestrictPlaneToVolumeOn()
-    sagittal_widget.SetInputConnection(vtkReader.GetOutputPort())
-    sagittal_widget.SetPlaneOrientationToXAxes()
-    sagittal_widget.SetSliceIndex(int(sagittalSlice))
-    sagittal_widget.DisplayTextOn()
-    sagittal_widget.SetDefaultRenderer(renderer)
-    sagittal_widget.SetTexturePlaneProperty(actor.GetProperty())
-    sagittal_widget.TextureInterpolateOff()
-    sagittal_widget.SetPicker(None)
-    sagittal_widget.On()
-
-    # Bind the key press event to the interactor
-    change_slice_sagittal_func = change_slice_sagittal(renderer_window, sagittal_widget)
-    interactor.AddObserver(vtk.vtkCommand.KeyPressEvent, change_slice_sagittal_func)
-
-    # Initialize the interactor and start the rendering loop
-    renderer_window.Render()
-    interactor.Start()
-
-def displayVtkFileCoronal(vtkDir):
-
-    global vtkDims
-    # VTK Image reader.
-    vtkReader = vtk.vtkStructuredPointsReader()
-    renderer = vtk.vtkRenderer()
-    renderer_window = vtk.vtkRenderWindow()
-    # VTK coronal plan widget.
-    coronal_widget = vtk.vtkImagePlaneWidget()
-    # VTK isosurface
-    iso = vtk.vtkMarchingCubes()
-    # VTK renderer_window_interactor.
-    interactor = vtk.vtkRenderWindowInteractor()
-    # VTK mapper.
-    mapper = vtk.vtkDataSetMapper()
-    # VTK actor.
-    actor = vtk.vtkActor()
-    # VTK dataset dims.
-    vtkDims = []
-
-    vtkReader.SetFileName(vtkDir)
-    vtkReader.Update()
-
-    # Get the dims of the data
-    vtkDims = vtkReader.GetOutput().GetDimensions()
-
-    iso.SetInputConnection(vtkReader.GetOutputPort())
-    iso.SetValue(0, 1)
-
-    # Map the surface to graphics primitives
-    mapper.SetInputConnection(iso.GetOutputPort())
-
-    # Create an actor to represent the surface
-    actor.SetMapper(mapper)
-
-    renderer.SetBackground(0.1, 0.2, 0.4)
-
-    # Define the rendering window
-    renderer_window.AddRenderer(renderer)
-    renderer_window.SetSize(800, 800)
-
-    # Define the interactor
-    interactor.SetRenderWindow(renderer_window)
-
-    coronal_widget.SetInteractor(interactor)
-    coronal_widget.RestrictPlaneToVolumeOn()
-    coronal_widget.SetInputConnection(vtkReader.GetOutputPort())
-    coronal_widget.SetPlaneOrientationToYAxes()
-    coronal_widget.SetSliceIndex(int(coronalSlice))
-    coronal_widget.DisplayTextOn()
-    coronal_widget.SetDefaultRenderer(renderer)
-    coronal_widget.SetTexturePlaneProperty(actor.GetProperty())
-    coronal_widget.TextureInterpolateOff()
-    coronal_widget.SetPicker(None)
-    coronal_widget.On()
-
-    # Bind the key press event to the interactor
-    change_slice_coronal_func = change_slice_coronal(renderer_window, coronal_widget)
-    interactor.AddObserver(vtk.vtkCommand.KeyPressEvent, change_slice_coronal_func)
-
-    # Initialize the interactor and start the rendering loop
-    renderer_window.Render()
-    interactor.Start()
-
-def displayVtkFileTransverse(vtkDir):
-
-    global vtkDims
-    # VTK Image reader.
-    vtkReader = vtk.vtkStructuredPointsReader()
-    renderer = vtk.vtkRenderer()
-    renderer_window = vtk.vtkRenderWindow()
-    # VTK transverse plan widget.
-    transverse_widget = vtk.vtkImagePlaneWidget()
-    # VTK isosurface
-    iso = vtk.vtkMarchingCubes()
-    # VTK renderer_window_interactor.
-    interactor = vtk.vtkRenderWindowInteractor()
-    # VTK mapper.
-    mapper = vtk.vtkDataSetMapper()
-    # VTK actor.
-    actor = vtk.vtkActor()
-    # VTK dataset dims.
-    vtkDims = []
-
-    vtkReader.SetFileName(vtkDir)
-    vtkReader.Update()
-
-    # Get the dims of the data
-    vtkDims = vtkReader.GetOutput().GetDimensions()
-
-    iso.SetInputConnection(vtkReader.GetOutputPort())
-    iso.SetValue(0, 1)
-
-    # Map the surface to graphics primitives
-    mapper.SetInputConnection(iso.GetOutputPort())
-
-    # Create an actor to represent the surface
-    actor.SetMapper(mapper)
-
-    renderer.SetBackground(0.1, 0.2, 0.4)
-
-    # Define the rendering window
-    renderer_window.AddRenderer(renderer)
-    renderer_window.SetSize(800, 800)
-
-    # Define the interactor
-    interactor.SetRenderWindow(renderer_window)
-
-    transverse_widget.SetInteractor(interactor)
-    transverse_widget.RestrictPlaneToVolumeOn()
-    transverse_widget.SetInputConnection(vtkReader.GetOutputPort())
-    transverse_widget.SetPlaneOrientationToZAxes()
-    transverse_widget.SetSliceIndex(int(transverseSlice))
-    transverse_widget.DisplayTextOn()
-    transverse_widget.SetDefaultRenderer(renderer)
-    transverse_widget.SetTexturePlaneProperty(actor.GetProperty())
-    transverse_widget.TextureInterpolateOff()
-    transverse_widget.SetPicker(None)
-    transverse_widget.On()
-
-    # Bind the key press event to the interactor
-    change_slice_transverse_func = change_slice_transverse(renderer_window, transverse_widget)
-    interactor.AddObserver(vtk.vtkCommand.KeyPressEvent, change_slice_transverse_func)
-
-    # Initialize the interactor and start the rendering loop
-    renderer_window.Render()
-    interactor.Start()
-
-def change_slice_sagittal(renderer_window, sagittal_widget):
-    def change_slice_sagittal_func(obj, event):
-        global sagittalSlice
-        global vtkDims
-
-        key = obj.GetKeySym()
-
-        if (key == "Right"):
-            if (sagittalSlice < vtkDims[0]):
-                sagittalSlice = sagittalSlice + 1
-                sagittal_widget.SetSliceIndex(sagittalSlice)
-                renderer_window.Render()
-                print(key)
-
-        else:
-            if (key == "Left"):
-                if (sagittalSlice > 0):
-                    sagittalSlice = sagittalSlice - 1
-                    sagittal_widget.SetSliceIndex(sagittalSlice)
-                    renderer_window.Render()
-                    print(key)
-    return change_slice_sagittal_func
-
-def change_slice_coronal(renderer_window, coronal_widget):
-    def change_slice_coronal_func(obj, event):
-        global coronalSlice
-        global vtkDims
-
-        key = obj.GetKeySym()
-
-        if (key == "Right"):
-            if (coronalSlice < vtkDims[1]):
-                coronalSlice = coronalSlice + 1
-                coronal_widget.SetSliceIndex(coronalSlice)
-                renderer_window.Render()
-                print(key)
-
-        else:
-            if (key == "Left"):
-                if (coronalSlice > 0):
-                    coronalSlice = coronalSlice - 1
-                    coronal_widget.SetSliceIndex(coronalSlice)
-                    renderer_window.Render()
-                    print(key)
-    return change_slice_coronal_func
-
-
-def change_slice_transverse(renderer_window, transverse_widget):
-    def change_slice_transverse_func(obj, event):
-        global transverseSlice
-        global vtkDims
-
-        key = obj.GetKeySym()
-
-        if (key == "Right"):
-            if (transverseSlice < vtkDims[2]):
-                transverseSlice = transverseSlice + 1
-                transverse_widget.SetSliceIndex(transverseSlice)
-                renderer_window.Render()
-                print(key)
-
-        else:
-            if (key == "Left"):
-                if (transverseSlice > 0):
-                    transverseSlice = transverseSlice - 1
-                    transverse_widget.SetSliceIndex(transverseSlice)
-                    renderer_window.Render()
-                    print(key)
-    return change_slice_transverse_func
-
 class Window(QWidget):
 
     def __init__(self):
@@ -477,6 +214,7 @@ class Window(QWidget):
         global dataset
         global label
         global plano
+        global DiretoriasDataSets
         aux = 0
 
         for cont in range(self.numDatasets):
@@ -531,11 +269,385 @@ class Window(QWidget):
 
         match plano:
             case 1:
-                displayVtkFileSagittal(os.path.join(DiretoriaItkOutput, "output.vtk"))
+                displayVtkFileSagittal(os.path.join(DiretoriaItkOutput, "output.vtk"), DiretoriasDataSets[dataset])
             case 2:
-                displayVtkFileCoronal(os.path.join(DiretoriaItkOutput, "output.vtk"))
+                displayVtkFileCoronal(os.path.join(DiretoriaItkOutput, "output.vtk"), DiretoriasDataSets[dataset])
             case 3:
-                displayVtkFileTransverse(os.path.join(DiretoriaItkOutput, "output.vtk"))
+                displayVtkFileTransverse(os.path.join(DiretoriaItkOutput, "output.vtk"), DiretoriasDataSets[dataset])
+
+
+def displayVtkFileSagittal(vtkDir, vtkDir1):
+
+    global vtkDims
+
+    # VTK Image reader.
+    vtkReader = vtk.vtkStructuredPointsReader()
+    # VTK Image reader.
+    vtkReader1 = vtk.vtkStructuredPointsReader()
+    renderer = vtk.vtkRenderer()
+    renderer_window = vtk.vtkRenderWindow()
+    # VTK coronal sagittal widget.
+    sagittal_widget = vtk.vtkImagePlaneWidget()
+    # VTK isosurface
+    iso = vtk.vtkMarchingCubes()
+    # VTK renderer_window_interactor.
+    interactor = vtk.vtkRenderWindowInteractor()
+    # VTK mapper.
+    mapper = vtk.vtkDataSetMapper()
+    # VTK actor.
+    actor = vtk.vtkActor()
+
+    vtkReader.SetFileName(vtkDir)
+    vtkReader.Update()
+    vtkReader1.SetFileName(vtkDir1)
+    vtkReader1.Update()
+
+    # Get the dims of the data
+    vtkDims = vtkReader.GetOutput().GetDimensions()
+
+    outlineFilter = vtk.vtkOutlineFilter()
+    outlineFilter.SetInputData(vtkReader.GetOutput())
+    outlineFilter.Update()
+
+    outline = outlineFilter.GetOutput()
+
+    isovalue = 0.5
+    contourFilter = vtk.vtkContourFilter()
+    contourFilter.SetValue(0, isovalue)
+    contourFilter.SetInputData(vtkReader.GetOutput())
+    contourFilter.Update()
+
+    isosurface = contourFilter.GetOutput()
+
+    mapper1 = vtk.vtkPolyDataMapper()
+    mapper1.SetInputData(outline)
+    mapper1.ScalarVisibilityOff()
+
+    mapper2 = vtk.vtkPolyDataMapper()
+    mapper2.SetInputData(isosurface)
+    mapper2.ScalarVisibilityOff()
+
+    actor1 = vtk.vtkActor()
+    actor1.SetMapper(mapper1)
+    actor1.GetProperty().SetColor(1, 1, 1)  # RGB
+    actor1.GetProperty().SetOpacity(0.5)
+
+    actor2 = vtk.vtkActor()
+    actor2.SetMapper(mapper2)
+    actor2.GetProperty().SetColor(1, 1, 0)  # RGB
+    actor2.GetProperty().SetOpacity(1)
+
+    iso.SetInputConnection(vtkReader.GetOutputPort())
+    iso.SetValue(0, 1)
+
+    # Map the surface to graphics primitives
+    mapper.SetInputConnection(iso.GetOutputPort())
+
+    # Create an actor to represent the surface
+    actor.SetMapper(mapper)
+
+    renderer.SetBackground(0.25, 0.25, 0.25)
+    renderer.AddActor(actor)
+    renderer.AddActor(actor1)
+    renderer.AddActor(actor2)
+
+    # Define the rendering window
+    renderer_window.AddRenderer(renderer)
+    renderer_window.SetSize(800, 800)
+
+    # Define the interactor
+    interactor.SetRenderWindow(renderer_window)
+
+    sagittal_widget.SetInteractor(interactor)
+    sagittal_widget.RestrictPlaneToVolumeOn()
+    sagittal_widget.SetInputConnection(vtkReader1.GetOutputPort())
+    sagittal_widget.SetPlaneOrientationToXAxes()
+    sagittal_widget.SetSliceIndex(int(sagittalSlice))
+    sagittal_widget.DisplayTextOn()
+    sagittal_widget.SetDefaultRenderer(renderer)
+    sagittal_widget.SetTexturePlaneProperty(actor.GetProperty())
+    sagittal_widget.TextureInterpolateOff()
+    sagittal_widget.SetPicker(None)
+    sagittal_widget.On()
+
+    # Bind the key press event to the interactor
+    change_slice_sagittal_func = change_slice_sagittal(renderer_window, sagittal_widget)
+    interactor.AddObserver(vtk.vtkCommand.KeyPressEvent, change_slice_sagittal_func)
+
+    # Initialize the interactor and start the rendering loop
+    renderer_window.Render()
+    interactor.Start()
+
+def displayVtkFileCoronal(vtkDir, vtkDir1):
+
+    global vtkDims
+    # VTK Image reader.
+    vtkReader = vtk.vtkStructuredPointsReader()
+    # VTK Image reader.
+    vtkReader1 = vtk.vtkStructuredPointsReader()
+    renderer = vtk.vtkRenderer()
+    renderer_window = vtk.vtkRenderWindow()
+    # VTK coronal plan widget.
+    coronal_widget = vtk.vtkImagePlaneWidget()
+    # VTK isosurface
+    iso = vtk.vtkMarchingCubes()
+    # VTK renderer_window_interactor.
+    interactor = vtk.vtkRenderWindowInteractor()
+    # VTK mapper.
+    mapper = vtk.vtkDataSetMapper()
+    # VTK actor.
+    actor = vtk.vtkActor()
+
+    vtkReader.SetFileName(vtkDir)
+    vtkReader.Update()
+    vtkReader1.SetFileName(vtkDir1)
+    vtkReader1.Update()
+
+    # Get the dims of the data
+    vtkDims = vtkReader.GetOutput().GetDimensions()
+
+    outlineFilter = vtk.vtkOutlineFilter()
+    outlineFilter.SetInputData(vtkReader.GetOutput())
+    outlineFilter.Update()
+
+    outline = outlineFilter.GetOutput()
+
+    isovalue = 0.5
+    contourFilter = vtk.vtkContourFilter()
+    contourFilter.SetValue(0, isovalue)
+    contourFilter.SetInputData(vtkReader.GetOutput())
+    contourFilter.Update()
+
+    isosurface = contourFilter.GetOutput()
+
+    mapper1 = vtk.vtkPolyDataMapper()
+    mapper1.SetInputData(outline)
+    mapper1.ScalarVisibilityOff()
+
+    mapper2 = vtk.vtkPolyDataMapper()
+    mapper2.SetInputData(isosurface)
+    mapper2.ScalarVisibilityOff()
+
+    actor1 = vtk.vtkActor()
+    actor1.SetMapper(mapper1)
+    actor1.GetProperty().SetColor(1, 1, 1)  # RGB
+    actor1.GetProperty().SetOpacity(0.5)
+
+    actor2 = vtk.vtkActor()
+    actor2.SetMapper(mapper2)
+    actor2.GetProperty().SetColor(1, 1, 0)  # RGB
+    actor2.GetProperty().SetOpacity(1)
+
+    iso.SetInputConnection(vtkReader.GetOutputPort())
+    iso.SetValue(0, 1)
+
+    # Map the surface to graphics primitives
+    mapper.SetInputConnection(iso.GetOutputPort())
+
+    # Create an actor to represent the surface
+    actor.SetMapper(mapper)
+
+    renderer.SetBackground(0.1, 0.2, 0.4)
+    renderer.AddActor(actor)
+    renderer.AddActor(actor1)
+    renderer.AddActor(actor2)
+
+    # Define the rendering window
+    renderer_window.AddRenderer(renderer)
+    renderer_window.SetSize(800, 800)
+
+    # Define the interactor
+    interactor.SetRenderWindow(renderer_window)
+
+    coronal_widget.SetInteractor(interactor)
+    coronal_widget.RestrictPlaneToVolumeOn()
+    coronal_widget.SetInputConnection(vtkReader1.GetOutputPort())
+    coronal_widget.SetPlaneOrientationToYAxes()
+    coronal_widget.SetSliceIndex(int(coronalSlice))
+    coronal_widget.DisplayTextOn()
+    coronal_widget.SetDefaultRenderer(renderer)
+    coronal_widget.SetTexturePlaneProperty(actor.GetProperty())
+    coronal_widget.TextureInterpolateOff()
+    coronal_widget.SetPicker(None)
+    coronal_widget.On()
+
+    # Bind the key press event to the interactor
+    change_slice_coronal_func = change_slice_coronal(renderer_window, coronal_widget)
+    interactor.AddObserver(vtk.vtkCommand.KeyPressEvent, change_slice_coronal_func)
+
+    # Initialize the interactor and start the rendering loop
+    renderer_window.Render()
+    interactor.Start()
+
+def displayVtkFileTransverse(vtkDir, vtkDir1):
+
+    global vtkDims
+    # VTK Image reader.
+    vtkReader = vtk.vtkStructuredPointsReader()
+    vtkReader1 = vtk.vtkStructuredPointsReader()
+    renderer = vtk.vtkRenderer()
+    renderer_window = vtk.vtkRenderWindow()
+    # VTK transverse plan widget.
+    transverse_widget = vtk.vtkImagePlaneWidget()
+    # VTK isosurface
+    iso = vtk.vtkMarchingCubes()
+    # VTK renderer_window_interactor.
+    interactor = vtk.vtkRenderWindowInteractor()
+    # VTK mapper.
+    mapper = vtk.vtkDataSetMapper()
+    # VTK actor.
+    actor = vtk.vtkActor()
+
+    vtkReader.SetFileName(vtkDir)
+    vtkReader.Update()
+    vtkReader1.SetFileName(vtkDir1)
+    vtkReader1.Update()
+
+    # Get the dims of the data
+    vtkDims = vtkReader.GetOutput().GetDimensions()
+
+    outlineFilter = vtk.vtkOutlineFilter()
+    outlineFilter.SetInputData(vtkReader.GetOutput())
+    outlineFilter.Update()
+
+    outline = outlineFilter.GetOutput()
+
+    isovalue = 0.5
+    contourFilter = vtk.vtkContourFilter()
+    contourFilter.SetValue(0, isovalue)
+    contourFilter.SetInputData(vtkReader.GetOutput())
+    contourFilter.Update()
+
+    isosurface = contourFilter.GetOutput()
+
+    mapper1 = vtk.vtkPolyDataMapper()
+    mapper1.SetInputData(outline)
+    mapper1.ScalarVisibilityOff()
+
+    mapper2 = vtk.vtkPolyDataMapper()
+    mapper2.SetInputData(isosurface)
+    mapper2.ScalarVisibilityOff()
+
+    actor1 = vtk.vtkActor()
+    actor1.SetMapper(mapper1)
+    actor1.GetProperty().SetColor(1, 1, 1)  # RGB
+    actor1.GetProperty().SetOpacity(0.5)
+
+    actor2 = vtk.vtkActor()
+    actor2.SetMapper(mapper2)
+    actor2.GetProperty().SetColor(1, 1, 0)  # RGB
+    actor2.GetProperty().SetOpacity(1)
+
+    iso.SetInputConnection(vtkReader.GetOutputPort())
+    iso.SetValue(0, 1)
+
+    # Map the surface to graphics primitives
+    mapper.SetInputConnection(iso.GetOutputPort())
+
+    # Create an actor to represent the surface
+    actor.SetMapper(mapper)
+
+    renderer.SetBackground(0.1, 0.2, 0.4)
+    renderer.AddActor(actor)
+    renderer.AddActor(actor1)
+    renderer.AddActor(actor2)
+
+    # Define the rendering window
+    renderer_window.AddRenderer(renderer)
+    renderer_window.SetSize(800, 800)
+
+    # Define the interactor
+    interactor.SetRenderWindow(renderer_window)
+
+    transverse_widget.SetInteractor(interactor)
+    transverse_widget.RestrictPlaneToVolumeOn()
+    transverse_widget.SetInputConnection(vtkReader1.GetOutputPort())
+    transverse_widget.SetPlaneOrientationToZAxes()
+    transverse_widget.SetSliceIndex(int(transverseSlice))
+    transverse_widget.DisplayTextOn()
+    transverse_widget.SetDefaultRenderer(renderer)
+    transverse_widget.SetTexturePlaneProperty(actor.GetProperty())
+    transverse_widget.TextureInterpolateOff()
+    transverse_widget.SetPicker(None)
+    transverse_widget.On()
+
+    # Bind the key press event to the interactor
+    change_slice_transverse_func = change_slice_transverse(renderer_window, transverse_widget)
+    interactor.AddObserver(vtk.vtkCommand.KeyPressEvent, change_slice_transverse_func)
+
+    # Initialize the interactor and start the rendering loop
+    renderer_window.Render()
+    interactor.Start()
+
+def change_slice_sagittal(renderer_window, sagittal_widget):
+    def change_slice_sagittal_func(obj, event):
+        global sagittalSlice
+        global vtkDims
+
+        key = obj.GetKeySym()
+
+        if (key == "Right"):
+            if (sagittalSlice < vtkDims[0]):
+                sagittalSlice = sagittalSlice + 1
+                sagittal_widget.SetSliceIndex(sagittalSlice)
+                renderer_window.Render()
+                print(key)
+
+        else:
+            if (key == "Left"):
+                if (sagittalSlice > 0):
+                    sagittalSlice = sagittalSlice - 1
+                    sagittal_widget.SetSliceIndex(sagittalSlice)
+                    renderer_window.Render()
+                    print(key)
+    return change_slice_sagittal_func
+
+def change_slice_coronal(renderer_window, coronal_widget):
+    def change_slice_coronal_func(obj, event):
+        global coronalSlice
+        global vtkDims
+
+        key = obj.GetKeySym()
+
+        if (key == "Right"):
+            if (coronalSlice < vtkDims[1]):
+                coronalSlice = coronalSlice + 1
+                coronal_widget.SetSliceIndex(coronalSlice)
+                renderer_window.Render()
+                print(key)
+
+        else:
+            if (key == "Left"):
+                if (coronalSlice > 0):
+                    coronalSlice = coronalSlice - 1
+                    coronal_widget.SetSliceIndex(coronalSlice)
+                    renderer_window.Render()
+                    print(key)
+    return change_slice_coronal_func
+
+
+def change_slice_transverse(renderer_window, transverse_widget):
+    def change_slice_transverse_func(obj, event):
+        global transverseSlice
+        global vtkDims
+
+        key = obj.GetKeySym()
+
+        if (key == "Right"):
+            if (transverseSlice < vtkDims[2]):
+                transverseSlice = transverseSlice + 1
+                transverse_widget.SetSliceIndex(transverseSlice)
+                renderer_window.Render()
+                print(key)
+
+        else:
+            if (key == "Left"):
+                if (transverseSlice > 0):
+                    transverseSlice = transverseSlice - 1
+                    transverse_widget.SetSliceIndex(transverseSlice)
+                    renderer_window.Render()
+                    print(key)
+    return change_slice_transverse_func
 
 if __name__ == "__main__":
 
