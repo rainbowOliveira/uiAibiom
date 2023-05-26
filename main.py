@@ -7,7 +7,6 @@ from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 
-
 # Estrutura do projeto.
 project_dir = os.getcwd()
 DiretoriaDataSets = os.path.join(project_dir, "DataSets")
@@ -42,7 +41,6 @@ plano = None
 
 
 def carregarDiretoriasDataSets():
-
     # Carregam-se as diretorias de todos os datasets.
     for diretoriaDataSet in listdir(DiretoriaDataSets):
         DiretoriasDataSets.append(os.path.join(DiretoriaDataSets, diretoriaDataSet))
@@ -50,7 +48,6 @@ def carregarDiretoriasDataSets():
 
 
 def carregarDataSets():
-
     # Carregam-se todos os datasets.
     for diretoriaDataSet in DiretoriasDataSets:
         itkReader = itk.ImageFileReader[ImageType].New()
@@ -61,7 +58,6 @@ def carregarDataSets():
 
 
 def binaryThresholdFun(itkImage, label):
-
     outsideValue = 0
     insideValue = 1
 
@@ -78,10 +74,10 @@ def binaryThresholdFun(itkImage, label):
 
 
 def writeItkImage(itkImage):
-
     writer.SetInput(itkImage)
     writer.SetFileName(os.path.join(DiretoriaItkOutput, "output.vtk"))
     writer.Update()
+
 
 class Window(QWidget):
 
@@ -170,12 +166,14 @@ class Window(QWidget):
 
         cont = 0
         for diretoriaDataset in DiretoriasDataSets:
-            setattr(Window, f"attr_{'cbDataset' + str(cont+1)}", QCheckBox(os.path.basename(diretoriaDataset).split('/')[-1], self))
-            cbDataset = getattr(Window, 'attr_cbDataset' + str(cont+1))
+            setattr(Window, f"attr_{'cbDataset' + str(cont + 1)}",
+                    QRadioButton(os.path.basename(diretoriaDataset).split('/')[-1], self))
+            cbDataset = getattr(Window, 'attr_cbDataset' + str(cont + 1))
             cbDataset.setFont(QFont('Arial', 12))
             vbox.addWidget(cbDataset)
             self.numDatasets = self.numDatasets + 1
             cont = cont + 1
+
 
         vbox.addLayout(label_layout1)
         vbox.addWidget(self.cbLabel1)
@@ -277,7 +275,6 @@ class Window(QWidget):
 
 
 def displayVtkFileSagittal(vtkDir, vtkDir1):
-
     global vtkDims
 
     # VTK Image reader.
@@ -378,8 +375,8 @@ def displayVtkFileSagittal(vtkDir, vtkDir1):
     renderer_window.Render()
     interactor.Start()
 
-def displayVtkFileCoronal(vtkDir, vtkDir1):
 
+def displayVtkFileCoronal(vtkDir, vtkDir1):
     global vtkDims
     # VTK Image reader.
     vtkReader = vtk.vtkStructuredPointsReader()
@@ -479,8 +476,8 @@ def displayVtkFileCoronal(vtkDir, vtkDir1):
     renderer_window.Render()
     interactor.Start()
 
-def displayVtkFileTransverse(vtkDir, vtkDir1):
 
+def displayVtkFileTransverse(vtkDir, vtkDir1):
     global vtkDims
     # VTK Image reader.
     vtkReader = vtk.vtkStructuredPointsReader()
@@ -579,6 +576,7 @@ def displayVtkFileTransverse(vtkDir, vtkDir1):
     renderer_window.Render()
     interactor.Start()
 
+
 def change_slice_sagittal(renderer_window, sagittal_widget):
     def change_slice_sagittal_func(obj, event):
         global sagittalSlice
@@ -600,7 +598,9 @@ def change_slice_sagittal(renderer_window, sagittal_widget):
                     sagittal_widget.SetSliceIndex(sagittalSlice)
                     renderer_window.Render()
                     print(key)
+
     return change_slice_sagittal_func
+
 
 def change_slice_coronal(renderer_window, coronal_widget):
     def change_slice_coronal_func(obj, event):
@@ -618,11 +618,12 @@ def change_slice_coronal(renderer_window, coronal_widget):
 
         else:
             if (key == "Left"):
-                if (coronalSlice > 0):
+                if coronalSlice > 0:
                     coronalSlice = coronalSlice - 1
                     coronal_widget.SetSliceIndex(coronalSlice)
                     renderer_window.Render()
                     print(key)
+
     return change_slice_coronal_func
 
 
@@ -647,13 +648,21 @@ def change_slice_transverse(renderer_window, transverse_widget):
                     transverse_widget.SetSliceIndex(transverseSlice)
                     renderer_window.Render()
                     print(key)
+
     return change_slice_transverse_func
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     carregarDiretoriasDataSets()
     carregarDataSets()
 
     app = QApplication(sys.argv)
+
+    # Open the style sheet file and read it
+    with open('style.qss', 'r') as f:
+        style = f.read()
+    # Set the current style sheet
+    app.setStyleSheet(style)
+
     ex = Window()
     sys.exit(app.exec_())
