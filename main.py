@@ -59,30 +59,6 @@ def carregarDataSets():
         dataSets.append(itkReader.GetOutput())
     print(dataSets)
 
-
-def binaryThresholdFun(itkImage, label):
-
-    outsideValue = 0
-    insideValue = 1
-
-    # ITK filters.
-    binaryThreshold = itk.BinaryThresholdImageFilter[ImageType, ImageType].New()
-    binaryThreshold.SetLowerThreshold(label)
-    binaryThreshold.SetUpperThreshold(label)
-    binaryThreshold.SetOutsideValue(outsideValue)
-    binaryThreshold.SetInsideValue(insideValue)
-    binaryThreshold.SetInput(itkImage)
-    binaryThreshold.Update()
-
-    return binaryThreshold
-
-
-def writeItkImage(itkImage):
-
-    writer.SetInput(itkImage)
-    writer.SetFileName(os.path.join(DiretoriaItkOutput, "output.vtk"))
-    writer.Update()
-
 class Window(QWidget):
 
     def __init__(self):
@@ -275,309 +251,273 @@ class Window(QWidget):
             case 3:
                 displayVtkFileTransverse(os.path.join(DiretoriaItkOutput, "output.vtk"), DiretoriasDataSets[dataset])
 
+def binaryThresholdFun(itkImage, label):
+
+    outsideValue = 0
+    insideValue = 1
+
+    # ITK filters.
+    binaryThreshold = itk.BinaryThresholdImageFilter[ImageType, ImageType].New()
+    binaryThreshold.SetLowerThreshold(label)
+    binaryThreshold.SetUpperThreshold(label)
+    binaryThreshold.SetOutsideValue(outsideValue)
+    binaryThreshold.SetInsideValue(insideValue)
+    binaryThreshold.SetInput(itkImage)
+    binaryThreshold.Update()
+
+    return binaryThreshold
+
+def writeItkImage(itkImage):
+
+    writer.SetInput(itkImage)
+    writer.SetFileName(os.path.join(DiretoriaItkOutput, "output.vtk"))
+    writer.Update()
 
 def displayVtkFileSagittal(vtkDir, vtkDir1):
+    # Corte sagital.
+    global sagittalSlice
 
-    global vtkDims
-
-    # VTK Image reader.
-    vtkReader = vtk.vtkStructuredPointsReader()
     # VTK Image reader.
     vtkReader1 = vtk.vtkStructuredPointsReader()
+    # VTK renderer.
     renderer = vtk.vtkRenderer()
+    # VTK renderer window.
     renderer_window = vtk.vtkRenderWindow()
     # VTK coronal sagittal widget.
     sagittal_widget = vtk.vtkImagePlaneWidget()
-    # VTK isosurface
-    iso = vtk.vtkMarchingCubes()
     # VTK renderer_window_interactor.
     interactor = vtk.vtkRenderWindowInteractor()
-    # VTK mapper.
-    mapper = vtk.vtkDataSetMapper()
-    # VTK actor.
-    actor = vtk.vtkActor()
 
-    vtkReader.SetFileName(vtkDir)
-    vtkReader.Update()
+    # Define-se o caminho até à imagem 'dataset.vtk'.
     vtkReader1.SetFileName(vtkDir1)
+    # Carrega-se a imagem 'dataset.vtk'.
     vtkReader1.Update()
 
-    # Get the dims of the data
-    vtkDims = vtkReader.GetOutput().GetDimensions()
+    # Aplicam-se os Outline e Contour Filter à imagem 'output.vtk'.
+    actor1, actor2 = outLineAndContourFilters(vtkDir)
 
-    outlineFilter = vtk.vtkOutlineFilter()
-    outlineFilter.SetInputData(vtkReader.GetOutput())
-    outlineFilter.Update()
-
-    outline = outlineFilter.GetOutput()
-
-    isovalue = 0.5
-    contourFilter = vtk.vtkContourFilter()
-    contourFilter.SetValue(0, isovalue)
-    contourFilter.SetInputData(vtkReader.GetOutput())
-    contourFilter.Update()
-
-    isosurface = contourFilter.GetOutput()
-
-    mapper1 = vtk.vtkPolyDataMapper()
-    mapper1.SetInputData(outline)
-    mapper1.ScalarVisibilityOff()
-
-    mapper2 = vtk.vtkPolyDataMapper()
-    mapper2.SetInputData(isosurface)
-    mapper2.ScalarVisibilityOff()
-
-    actor1 = vtk.vtkActor()
-    actor1.SetMapper(mapper1)
-    actor1.GetProperty().SetColor(1, 1, 1)  # RGB
-    actor1.GetProperty().SetOpacity(0.5)
-
-    actor2 = vtk.vtkActor()
-    actor2.SetMapper(mapper2)
-    actor2.GetProperty().SetColor(1, 1, 0)  # RGB
-    actor2.GetProperty().SetOpacity(1)
-
-    iso.SetInputConnection(vtkReader.GetOutputPort())
-    iso.SetValue(0, 1)
-
-    # Map the surface to graphics primitives
-    mapper.SetInputConnection(iso.GetOutputPort())
-
-    # Create an actor to represent the surface
-    actor.SetMapper(mapper)
-
+    # Define-se a cor do background da janela vtk.
     renderer.SetBackground(0.25, 0.25, 0.25)
-    renderer.AddActor(actor)
+    # Adiciona-se o actor OutLine à janela vtk.
     renderer.AddActor(actor1)
+    # Adiciona-se o actor Contour à janela vtk.
     renderer.AddActor(actor2)
 
-    # Define the rendering window
+    # Construção do renderizador da janela vtk.
     renderer_window.AddRenderer(renderer)
+    # Define-se o tamanho da janela vtk.
     renderer_window.SetSize(800, 800)
 
-    # Define the interactor
+    # Definem-se as interações entre a janela vtk e o utilizador.
     interactor.SetRenderWindow(renderer_window)
 
+    # Definem-se as interações do corte sagital.
     sagittal_widget.SetInteractor(interactor)
-    sagittal_widget.RestrictPlaneToVolumeOn()
+    # Define-se a imagem 'dataset.vtk' como input do widget corte sagital.
     sagittal_widget.SetInputConnection(vtkReader1.GetOutputPort())
+    # Define-se a orientação do corte como sagital.
     sagittal_widget.SetPlaneOrientationToXAxes()
+    # Define-se a posição inicial do corte sagital.
     sagittal_widget.SetSliceIndex(int(sagittalSlice))
-    sagittal_widget.DisplayTextOn()
+    # Define-se a janela vtk do widget corte sagital.
     sagittal_widget.SetDefaultRenderer(renderer)
-    sagittal_widget.SetTexturePlaneProperty(actor.GetProperty())
-    sagittal_widget.TextureInterpolateOff()
-    sagittal_widget.SetPicker(None)
+    # Disponibiliza-se o widget corte sagital.
     sagittal_widget.On()
 
-    # Bind the key press event to the interactor
+    # Vincula-se a 'change_slice_sagittal_func' ao evento de pressionar uma seta do teclado.
     change_slice_sagittal_func = change_slice_sagittal(renderer_window, sagittal_widget)
     interactor.AddObserver(vtk.vtkCommand.KeyPressEvent, change_slice_sagittal_func)
 
-    # Initialize the interactor and start the rendering loop
+    # Inicializam-se as interações e renderiza-se a janela vtk.
     renderer_window.Render()
     interactor.Start()
 
 def displayVtkFileCoronal(vtkDir, vtkDir1):
+    # Corte coronal.
+    global coronalSlice
 
-    global vtkDims
-    # VTK Image reader.
-    vtkReader = vtk.vtkStructuredPointsReader()
     # VTK Image reader.
     vtkReader1 = vtk.vtkStructuredPointsReader()
+    # VTK renderer.
     renderer = vtk.vtkRenderer()
+    # VTK renderer window.
     renderer_window = vtk.vtkRenderWindow()
-    # VTK coronal plan widget.
+    # VTK coronal sagittal widget.
     coronal_widget = vtk.vtkImagePlaneWidget()
-    # VTK isosurface
-    iso = vtk.vtkMarchingCubes()
     # VTK renderer_window_interactor.
     interactor = vtk.vtkRenderWindowInteractor()
-    # VTK mapper.
-    mapper = vtk.vtkDataSetMapper()
-    # VTK actor.
-    actor = vtk.vtkActor()
 
-    vtkReader.SetFileName(vtkDir)
-    vtkReader.Update()
+    # Define-se o caminho até à imagem 'dataset.vtk'.
     vtkReader1.SetFileName(vtkDir1)
+    # Carrega-se a imagem 'dataset.vtk'.
     vtkReader1.Update()
 
-    # Get the dims of the data
-    vtkDims = vtkReader.GetOutput().GetDimensions()
+    # Aplicam-se os Outline e Contour Filter à imagem 'output.vtk'.
+    actor1, actor2 = outLineAndContourFilters(vtkDir)
 
-    outlineFilter = vtk.vtkOutlineFilter()
-    outlineFilter.SetInputData(vtkReader.GetOutput())
-    outlineFilter.Update()
-
-    outline = outlineFilter.GetOutput()
-
-    isovalue = 0.5
-    contourFilter = vtk.vtkContourFilter()
-    contourFilter.SetValue(0, isovalue)
-    contourFilter.SetInputData(vtkReader.GetOutput())
-    contourFilter.Update()
-
-    isosurface = contourFilter.GetOutput()
-
-    mapper1 = vtk.vtkPolyDataMapper()
-    mapper1.SetInputData(outline)
-    mapper1.ScalarVisibilityOff()
-
-    mapper2 = vtk.vtkPolyDataMapper()
-    mapper2.SetInputData(isosurface)
-    mapper2.ScalarVisibilityOff()
-
-    actor1 = vtk.vtkActor()
-    actor1.SetMapper(mapper1)
-    actor1.GetProperty().SetColor(1, 1, 1)  # RGB
-    actor1.GetProperty().SetOpacity(0.5)
-
-    actor2 = vtk.vtkActor()
-    actor2.SetMapper(mapper2)
-    actor2.GetProperty().SetColor(1, 1, 0)  # RGB
-    actor2.GetProperty().SetOpacity(1)
-
-    iso.SetInputConnection(vtkReader.GetOutputPort())
-    iso.SetValue(0, 1)
-
-    # Map the surface to graphics primitives
-    mapper.SetInputConnection(iso.GetOutputPort())
-
-    # Create an actor to represent the surface
-    actor.SetMapper(mapper)
-
-    renderer.SetBackground(0.1, 0.2, 0.4)
-    renderer.AddActor(actor)
+    # Define-se a cor do background da janela vtk.
+    renderer.SetBackground(0.25, 0.25, 0.25)
+    # Adiciona-se o actor OutLine à janela vtk.
     renderer.AddActor(actor1)
+    # Adiciona-se o actor Contour à janela vtk.
     renderer.AddActor(actor2)
 
-    # Define the rendering window
+    # Construção do renderizador da janela vtk.
     renderer_window.AddRenderer(renderer)
+    # Define-se o tamanho da janela vtk.
     renderer_window.SetSize(800, 800)
 
-    # Define the interactor
+    # Definem-se as interações entre a janela vtk e o utilizador.
     interactor.SetRenderWindow(renderer_window)
 
+    # Definem-se as interações do corte coronal.
     coronal_widget.SetInteractor(interactor)
-    coronal_widget.RestrictPlaneToVolumeOn()
+    # Define-se a imagem 'dataset.vtk' como input do widget corte coronal.
     coronal_widget.SetInputConnection(vtkReader1.GetOutputPort())
+    # Define-se a orientação do corte como coronal.
     coronal_widget.SetPlaneOrientationToYAxes()
+    # Define-se a posição inicial do corte coronal.
     coronal_widget.SetSliceIndex(int(coronalSlice))
-    coronal_widget.DisplayTextOn()
+    # Define-se a janela vtk do widget corte coronal.
     coronal_widget.SetDefaultRenderer(renderer)
-    coronal_widget.SetTexturePlaneProperty(actor.GetProperty())
-    coronal_widget.TextureInterpolateOff()
-    coronal_widget.SetPicker(None)
+    # Disponibiliza-se o widget corte coronal.
     coronal_widget.On()
 
-    # Bind the key press event to the interactor
+    # Vincula-se a 'change_slice_coronal_func' ao evento de pressionar uma seta do teclado.
     change_slice_coronal_func = change_slice_coronal(renderer_window, coronal_widget)
     interactor.AddObserver(vtk.vtkCommand.KeyPressEvent, change_slice_coronal_func)
 
-    # Initialize the interactor and start the rendering loop
+    # Inicializam-se as interações e renderiza-se a janela vtk.
     renderer_window.Render()
     interactor.Start()
 
 def displayVtkFileTransverse(vtkDir, vtkDir1):
+    # Corte transversal.
+    global transverseSlice
 
-    global vtkDims
     # VTK Image reader.
-    vtkReader = vtk.vtkStructuredPointsReader()
     vtkReader1 = vtk.vtkStructuredPointsReader()
+    # VTK renderer.
     renderer = vtk.vtkRenderer()
+    # VTK renderer window.
     renderer_window = vtk.vtkRenderWindow()
-    # VTK transverse plan widget.
+    # VTK coronal sagittal widget.
     transverse_widget = vtk.vtkImagePlaneWidget()
-    # VTK isosurface
-    iso = vtk.vtkMarchingCubes()
     # VTK renderer_window_interactor.
     interactor = vtk.vtkRenderWindowInteractor()
-    # VTK mapper.
-    mapper = vtk.vtkDataSetMapper()
-    # VTK actor.
-    actor = vtk.vtkActor()
 
-    vtkReader.SetFileName(vtkDir)
-    vtkReader.Update()
+    # Define-se o caminho até à imagem 'dataset.vtk'.
     vtkReader1.SetFileName(vtkDir1)
+    # Carrega-se a imagem 'dataset.vtk'.
     vtkReader1.Update()
 
-    # Get the dims of the data
-    vtkDims = vtkReader.GetOutput().GetDimensions()
+    # Aplicam-se os Outline e Contour Filter à imagem 'output.vtk'.
+    actor1, actor2 = outLineAndContourFilters(vtkDir)
 
-    outlineFilter = vtk.vtkOutlineFilter()
-    outlineFilter.SetInputData(vtkReader.GetOutput())
-    outlineFilter.Update()
-
-    outline = outlineFilter.GetOutput()
-
-    isovalue = 0.5
-    contourFilter = vtk.vtkContourFilter()
-    contourFilter.SetValue(0, isovalue)
-    contourFilter.SetInputData(vtkReader.GetOutput())
-    contourFilter.Update()
-
-    isosurface = contourFilter.GetOutput()
-
-    mapper1 = vtk.vtkPolyDataMapper()
-    mapper1.SetInputData(outline)
-    mapper1.ScalarVisibilityOff()
-
-    mapper2 = vtk.vtkPolyDataMapper()
-    mapper2.SetInputData(isosurface)
-    mapper2.ScalarVisibilityOff()
-
-    actor1 = vtk.vtkActor()
-    actor1.SetMapper(mapper1)
-    actor1.GetProperty().SetColor(1, 1, 1)  # RGB
-    actor1.GetProperty().SetOpacity(0.5)
-
-    actor2 = vtk.vtkActor()
-    actor2.SetMapper(mapper2)
-    actor2.GetProperty().SetColor(1, 1, 0)  # RGB
-    actor2.GetProperty().SetOpacity(1)
-
-    iso.SetInputConnection(vtkReader.GetOutputPort())
-    iso.SetValue(0, 1)
-
-    # Map the surface to graphics primitives
-    mapper.SetInputConnection(iso.GetOutputPort())
-
-    # Create an actor to represent the surface
-    actor.SetMapper(mapper)
-
-    renderer.SetBackground(0.1, 0.2, 0.4)
-    renderer.AddActor(actor)
+    # Define-se a cor do background da janela vtk.
+    renderer.SetBackground(0.25, 0.25, 0.25)
+    # Adiciona-se o actor OutLine à janela vtk.
     renderer.AddActor(actor1)
+    # Adiciona-se o actor Contour à janela vtk.
     renderer.AddActor(actor2)
 
-    # Define the rendering window
+    # Construção do renderizador da janela vtk.
     renderer_window.AddRenderer(renderer)
+    # Define-se o tamanho da janela vtk.
     renderer_window.SetSize(800, 800)
 
-    # Define the interactor
+    # Definem-se as interações entre a janela vtk e o utilizador.
     interactor.SetRenderWindow(renderer_window)
 
+    # Definem-se as interações do corte transversal.
     transverse_widget.SetInteractor(interactor)
-    transverse_widget.RestrictPlaneToVolumeOn()
+    # Define-se a imagem 'dataset.vtk' como input do widget corte transversal.
     transverse_widget.SetInputConnection(vtkReader1.GetOutputPort())
+    # Define-se a orientação do corte como transversal.
     transverse_widget.SetPlaneOrientationToZAxes()
+    # Define-se a posição inicial do corte transversal.
     transverse_widget.SetSliceIndex(int(transverseSlice))
-    transverse_widget.DisplayTextOn()
+    # Define-se a janela vtk do widget corte transversal.
     transverse_widget.SetDefaultRenderer(renderer)
-    transverse_widget.SetTexturePlaneProperty(actor.GetProperty())
-    transverse_widget.TextureInterpolateOff()
-    transverse_widget.SetPicker(None)
+    # Disponibiliza-se o widget corte transversal.
     transverse_widget.On()
 
-    # Bind the key press event to the interactor
+    # Vincula-se a 'change_slice_transverse_func' ao evento de pressionar uma seta do teclado.
     change_slice_transverse_func = change_slice_transverse(renderer_window, transverse_widget)
     interactor.AddObserver(vtk.vtkCommand.KeyPressEvent, change_slice_transverse_func)
 
-    # Initialize the interactor and start the rendering loop
+    # Inicializam-se as interações e renderiza-se a janela vtk.
     renderer_window.Render()
     interactor.Start()
+
+def outLineAndContourFilters(vtkDir):
+    # Número de cortes sagitais, coronais e transversais.
+    global vtkDims
+
+    # VTK Image reader.
+    vtkReader = vtk.vtkStructuredPointsReader()
+
+    # Define-se o caminho até à imagem 'output.vtk'.
+    vtkReader.SetFileName(vtkDir)
+    # Carrega-se a imagem output.vtk.
+    vtkReader.Update()
+
+    # Obtêm-se o número de cortes sagitais, coronais e transversais.
+    vtkDims = vtkReader.GetOutput().GetDimensions()
+
+    # Inicializa-se o Outline Filter.
+    outlineFilter = vtk.vtkOutlineFilter()
+    # Define-se a imagem 'output.vtk' como input do Outline Filter.
+    outlineFilter.SetInputData(vtkReader.GetOutput())
+    # Processa-se a imagem ´output.vtk´ com o OutLine Filter.
+    outlineFilter.Update()
+
+    # Obtêm-se o output do OutLine Filter.
+    outline = outlineFilter.GetOutput()
+
+    # Inicializa-se o Contour Filter.
+    contourFilter = vtk.vtkContourFilter()
+    # Definem-se parâmetros do Contour Filter.
+    isovalue = 0.5
+    contourFilter.SetValue(0, isovalue)
+    # Define-se a imagem ´output.vtk´ como input do Contour Filter.
+    contourFilter.SetInputData(vtkReader.GetOutput())
+    # Processa-se a imagem 'output.vtk' com o Contour Filter.
+    contourFilter.Update()
+
+    # Obtêm-se o output do Contour Filter.
+    isosurface = contourFilter.GetOutput()
+
+    # Inicializa-se o mapper do OutLine Filter.
+    mapper1 = vtk.vtkPolyDataMapper()
+    # Construção do OutLine mapper a partir do output do OutLine Filter.
+    mapper1.SetInputData(outline)
+
+    # Inicializa-se o mapper do Contour Filter.
+    mapper2 = vtk.vtkPolyDataMapper()
+    # Contrução do Contour mapper a partir do output do Contour Filter.
+    mapper2.SetInputData(isosurface)
+
+    # Inicializa-se o actor OutLine.
+    actor1 = vtk.vtkActor()
+    # Contrução do actor OutLine através do OutLine mapper.
+    actor1.SetMapper(mapper1)
+    # Define-se a cor do actor OutLine.
+    actor1.GetProperty().SetColor(1, 1, 1)
+    # Define-se a opacidade do actor OutLine.
+    actor1.GetProperty().SetOpacity(0.5)
+
+    # Inicializa-se o actor Contour.
+    actor2 = vtk.vtkActor()
+    # Contrução do actor Contour através do Contour mapper.
+    actor2.SetMapper(mapper2)
+    # Define-se a cor do actor Contour.
+    actor2.GetProperty().SetColor(1, 1, 0)  # RGB
+    # Define-se a opacidade do actor Contour.
+    actor2.GetProperty().SetOpacity(1)
+
+    # Retornam-se os actores dos filtros aplicados.
+    return actor1, actor2
 
 def change_slice_sagittal(renderer_window, sagittal_widget):
     def change_slice_sagittal_func(obj, event):
