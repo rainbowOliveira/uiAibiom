@@ -16,6 +16,7 @@ DiretoriasDataSets = []
 
 # ITK Image type.
 Dimension = 3
+# Pixel type.
 PixelType = itk.US
 ImageType = itk.Image[PixelType, Dimension]
 
