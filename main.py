@@ -6,7 +6,7 @@ import sys
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
-
+from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 
 # Estrutura do projeto.
 project_dir = os.getcwd()
@@ -25,6 +25,8 @@ writer = itk.ImageFileWriter[ImageType].New()
 
 # VTK colours.
 colors = vtk.vtkNamedColors()
+# VTK renderer.
+renderer = vtk.vtkRenderer()
 
 # Initial Sagittal Slice.
 sagittalSlice = 0
@@ -64,15 +66,16 @@ class Window(QWidget):
 
     def __init__(self):
         super().__init__()
-
         self.initUI()
 
     def initUI(self):
+        global renderer
 
         self.numDatasets = 0
 
-        # Set window properties
+        # Definem-se propriedades da window.
         self.setGeometry(300, 300, 400, 200)
+        # Define-se o título da window.
         self.setWindowTitle('Análise de imagem biomédica')
 
         self.title = QLabel('Análise de imagem biomédica', self)
@@ -173,21 +176,32 @@ class Window(QWidget):
         vbox.addWidget(self.cbPlano3)
         vbox.addWidget(submit_button)
 
-        # Add vertical layout to grid layout
-        grid = QGridLayout()
-        grid.addLayout(vbox, 0, 0)
+        # Create a layout for the main window
+        main_layout = QHBoxLayout()
 
-        # Set stretch factor for row and column that contains the label
-        grid.setColumnStretch(0, 1)
-        grid.setRowStretch(1, 1)
+        # Create VTK widget
+        self.vtkWidget = QVTKRenderWindowInteractor(self)
+        vtk_layout = QVBoxLayout()
+        vtk_layout.addWidget(self.vtkWidget)
+
+        # Set size policy for VTK widget
+        self.vtkWidget.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.vtkWidget.setFixedSize(800, 600)
+
+        # Add VTK widget to the main layout
+        main_layout.addLayout(vtk_layout)
+
+        # Add the vertical layout to the main layout
+        main_layout.addLayout(vbox)
 
         # Set layout
-        self.setLayout(grid)
+        self.setLayout(main_layout)
 
         # Show window
         self.show()
 
     def submit(self):
+
         global dataset
         global label
         global plano
@@ -246,11 +260,14 @@ class Window(QWidget):
 
         match plano:
             case 1:
-                displayVtkFileSagittal(os.path.join(DiretoriaItkOutput, "output.vtk"), DiretoriasDataSets[dataset])
+                displayVtkFileSagittal(renderer, os.path.join(DiretoriaItkOutput, "output.vtk"), DiretoriasDataSets[dataset],
+                                       self.vtkWidget)
             case 2:
-                displayVtkFileCoronal(os.path.join(DiretoriaItkOutput, "output.vtk"), DiretoriasDataSets[dataset])
+                displayVtkFileCoronal(renderer, os.path.join(DiretoriaItkOutput, "output.vtk"), DiretoriasDataSets[dataset],
+                                      self.vtkWidget)
             case 3:
-                displayVtkFileTransverse(os.path.join(DiretoriaItkOutput, "output.vtk"), DiretoriasDataSets[dataset])
+                displayVtkFileTransverse(renderer, os.path.join(DiretoriaItkOutput, "output.vtk"), DiretoriasDataSets[dataset],
+                                         self.vtkWidget)
 
 def binaryThresholdFun(itkImage, label):
 
@@ -274,20 +291,20 @@ def writeItkImage(itkImage):
     writer.SetFileName(os.path.join(DiretoriaItkOutput, "output.vtk"))
     writer.Update()
 
-def displayVtkFileSagittal(vtkDir, vtkDir1):
+def displayVtkFileSagittal(renderer, vtkDir, vtkDir1, vtkWidget):
     # Corte sagital.
     global sagittalSlice
 
     # VTK Image reader.
     vtkReader1 = vtk.vtkStructuredPointsReader()
-    # VTK renderer.
-    renderer = vtk.vtkRenderer()
     # VTK renderer window.
-    renderer_window = vtk.vtkRenderWindow()
+    render_window = vtkWidget.GetRenderWindow()
     # VTK coronal sagittal widget.
     sagittal_widget = vtk.vtkImagePlaneWidget()
     # VTK renderer_window_interactor.
-    interactor = vtk.vtkRenderWindowInteractor()
+    interactor = render_window.GetInteractor()
+
+    renderer.RemoveAllViewProps()
 
     # Define-se o caminho até à imagem 'dataset.vtk'.
     vtkReader1.SetFileName(vtkDir1)
@@ -305,12 +322,7 @@ def displayVtkFileSagittal(vtkDir, vtkDir1):
     renderer.AddActor(actor2)
 
     # Construção do renderizador da janela vtk.
-    renderer_window.AddRenderer(renderer)
-    # Define-se o tamanho da janela vtk.
-    renderer_window.SetSize(800, 800)
-
-    # Definem-se as interações entre a janela vtk e o utilizador.
-    interactor.SetRenderWindow(renderer_window)
+    render_window.AddRenderer(renderer)
 
     # Definem-se as interações do corte sagital.
     sagittal_widget.SetInteractor(interactor)
@@ -326,27 +338,28 @@ def displayVtkFileSagittal(vtkDir, vtkDir1):
     sagittal_widget.On()
 
     # Vincula-se a 'change_slice_sagittal_func' ao evento de pressionar uma seta do teclado.
-    change_slice_sagittal_func = change_slice_sagittal(renderer_window, sagittal_widget)
-    interactor.AddObserver(vtk.vtkCommand.KeyPressEvent, change_slice_sagittal_func)
+    change_slice_sagittal_func = change_slice_sagittal(render_window, sagittal_widget)
+    render_window.GetInteractor().AddObserver(vtk.vtkCommand.KeyPressEvent, change_slice_sagittal_func)
 
     # Inicializam-se as interações e renderiza-se a janela vtk.
-    renderer_window.Render()
+    interactor.Initialize()
+    render_window.Render()
     interactor.Start()
 
-def displayVtkFileCoronal(vtkDir, vtkDir1):
+def displayVtkFileCoronal(renderer, vtkDir, vtkDir1, vtkWidget):
     # Corte coronal.
     global coronalSlice
 
     # VTK Image reader.
     vtkReader1 = vtk.vtkStructuredPointsReader()
-    # VTK renderer.
-    renderer = vtk.vtkRenderer()
     # VTK renderer window.
-    renderer_window = vtk.vtkRenderWindow()
+    render_window = vtkWidget.GetRenderWindow()
     # VTK coronal sagittal widget.
     coronal_widget = vtk.vtkImagePlaneWidget()
     # VTK renderer_window_interactor.
-    interactor = vtk.vtkRenderWindowInteractor()
+    interactor = render_window.GetInteractor()
+
+    renderer.RemoveAllViewProps()
 
     # Define-se o caminho até à imagem 'dataset.vtk'.
     vtkReader1.SetFileName(vtkDir1)
@@ -364,12 +377,7 @@ def displayVtkFileCoronal(vtkDir, vtkDir1):
     renderer.AddActor(actor2)
 
     # Construção do renderizador da janela vtk.
-    renderer_window.AddRenderer(renderer)
-    # Define-se o tamanho da janela vtk.
-    renderer_window.SetSize(800, 800)
-
-    # Definem-se as interações entre a janela vtk e o utilizador.
-    interactor.SetRenderWindow(renderer_window)
+    render_window.AddRenderer(renderer)
 
     # Definem-se as interações do corte coronal.
     coronal_widget.SetInteractor(interactor)
@@ -385,27 +393,28 @@ def displayVtkFileCoronal(vtkDir, vtkDir1):
     coronal_widget.On()
 
     # Vincula-se a 'change_slice_coronal_func' ao evento de pressionar uma seta do teclado.
-    change_slice_coronal_func = change_slice_coronal(renderer_window, coronal_widget)
+    change_slice_coronal_func = change_slice_coronal(render_window, coronal_widget)
     interactor.AddObserver(vtk.vtkCommand.KeyPressEvent, change_slice_coronal_func)
 
     # Inicializam-se as interações e renderiza-se a janela vtk.
-    renderer_window.Render()
+    interactor.Initialize()
+    render_window.Render()
     interactor.Start()
 
-def displayVtkFileTransverse(vtkDir, vtkDir1):
+def displayVtkFileTransverse(renderer, vtkDir, vtkDir1, vtkWidget):
     # Corte transversal.
     global transverseSlice
 
     # VTK Image reader.
     vtkReader1 = vtk.vtkStructuredPointsReader()
-    # VTK renderer.
-    renderer = vtk.vtkRenderer()
     # VTK renderer window.
-    renderer_window = vtk.vtkRenderWindow()
+    render_window = vtkWidget.GetRenderWindow()
     # VTK coronal sagittal widget.
     transverse_widget = vtk.vtkImagePlaneWidget()
     # VTK renderer_window_interactor.
-    interactor = vtk.vtkRenderWindowInteractor()
+    interactor = render_window.GetInteractor()
+
+    renderer.RemoveAllViewProps()
 
     # Define-se o caminho até à imagem 'dataset.vtk'.
     vtkReader1.SetFileName(vtkDir1)
@@ -423,12 +432,7 @@ def displayVtkFileTransverse(vtkDir, vtkDir1):
     renderer.AddActor(actor2)
 
     # Construção do renderizador da janela vtk.
-    renderer_window.AddRenderer(renderer)
-    # Define-se o tamanho da janela vtk.
-    renderer_window.SetSize(800, 800)
-
-    # Definem-se as interações entre a janela vtk e o utilizador.
-    interactor.SetRenderWindow(renderer_window)
+    render_window.AddRenderer(renderer)
 
     # Definem-se as interações do corte transversal.
     transverse_widget.SetInteractor(interactor)
@@ -444,11 +448,12 @@ def displayVtkFileTransverse(vtkDir, vtkDir1):
     transverse_widget.On()
 
     # Vincula-se a 'change_slice_transverse_func' ao evento de pressionar uma seta do teclado.
-    change_slice_transverse_func = change_slice_transverse(renderer_window, transverse_widget)
+    change_slice_transverse_func = change_slice_transverse(render_window, transverse_widget)
     interactor.AddObserver(vtk.vtkCommand.KeyPressEvent, change_slice_transverse_func)
 
     # Inicializam-se as interações e renderiza-se a janela vtk.
-    renderer_window.Render()
+    interactor.Initialize()
+    render_window.Render()
     interactor.Start()
 
 def outLineAndContourFilters(vtkDir):
