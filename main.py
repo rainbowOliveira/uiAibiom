@@ -95,36 +95,57 @@ class Window(QWidget):
         self.label2.setFont(QFont('Arial', 16))
         self.label2.setStyleSheet("color: #ffffff; background-color: #333333; font-size: 16pt;")
 
-        self.cbLabel1 = QCheckBox('Cérebro', self)
-        self.cbLabel1.setFont(QFont('Arial', 12))
-        self.cbLabel2 = QCheckBox('Cerebelo', self)
-        self.cbLabel2.setFont(QFont('Arial', 12))
-        self.cbLabel3 = QCheckBox('Tronco Cerebral', self)
-        self.cbLabel3.setFont(QFont('Arial', 12))
-        self.cbLabel4 = QCheckBox('Corpo Caloso', self)
-        self.cbLabel4.setFont(QFont('Arial', 12))
-        self.cbLabel5 = QCheckBox('Fórnix', self)
-        self.cbLabel5.setFont(QFont('Arial', 12))
-        self.cbLabel6 = QCheckBox('Tálamus', self)
-        self.cbLabel6.setFont(QFont('Arial', 12))
-        self.cbLabel7 = QCheckBox('Mid Brain', self)
-        self.cbLabel7.setFont(QFont('Arial', 12))
-        self.cbLabel8 = QCheckBox('Pons', self)
-        self.cbLabel8.setFont(QFont('Arial', 12))
-        self.cbLabel9 = QCheckBox('Medula', self)
-        self.cbLabel9.setFont(QFont('Arial', 12))
-        self.cbLabel10 = QCheckBox('Ventrículos Laterais', self)
-        self.cbLabel10.setFont(QFont('Arial', 12))
-        self.cbLabel11 = QCheckBox('Terceiro Ventrículo', self)
-        self.cbLabel11.setFont(QFont('Arial', 12))
-        self.cbLabel12 = QCheckBox('Quarto Ventrículo', self)
-        self.cbLabel12.setFont(QFont('Arial', 12))
-        self.cbPlano1 = QCheckBox('Sagital', self)
-        self.cbPlano1.setFont(QFont('Arial', 12))
-        self.cbPlano2 = QCheckBox('Coronal', self)
-        self.cbPlano2.setFont(QFont('Arial', 12))
-        self.cbPlano3 = QCheckBox('Transversal', self)
-        self.cbPlano3.setFont(QFont('Arial', 12))
+        # Create radio buttons.
+        self.buttonGroupDataset = QButtonGroup(self)
+        self.buttonGroupLabel = QButtonGroup(self)
+        self.buttonGroupPlane = QButtonGroup(self)
+
+        self.rbLabel1 = QRadioButton('Cérebro', self)
+        self.rbLabel1.setFont(QFont('Arial', 12))
+        self.rbLabel2 = QRadioButton('Cerebelo', self)
+        self.rbLabel2.setFont(QFont('Arial', 12))
+        self.rbLabel3 = QRadioButton('Tronco Cerebral', self)
+        self.rbLabel3.setFont(QFont('Arial', 12))
+        self.rbLabel4 = QRadioButton('Corpo Caloso', self)
+        self.rbLabel4.setFont(QFont('Arial', 12))
+        self.rbLabel5 = QRadioButton('Fórnix', self)
+        self.rbLabel5.setFont(QFont('Arial', 12))
+        self.rbLabel6 = QRadioButton('Tálamus', self)
+        self.rbLabel6.setFont(QFont('Arial', 12))
+        self.rbLabel7 = QRadioButton('Mid Brain', self)
+        self.rbLabel7.setFont(QFont('Arial', 12))
+        self.rbLabel8 = QRadioButton('Pons', self)
+        self.rbLabel8.setFont(QFont('Arial', 12))
+        self.rbLabel9 = QRadioButton('Medula', self)
+        self.rbLabel9.setFont(QFont('Arial', 12))
+        self.rbLabel10 = QRadioButton('Ventrículos Laterais', self)
+        self.rbLabel10.setFont(QFont('Arial', 12))
+        self.rbLabel11 = QRadioButton('Terceiro Ventrículo', self)
+        self.rbLabel11.setFont(QFont('Arial', 12))
+        self.rbLabel12 = QRadioButton('Quarto Ventrículo', self)
+        self.rbLabel12.setFont(QFont('Arial', 12))
+        self.rbPlano1 = QRadioButton('Sagital', self)
+        self.rbPlano1.setFont(QFont('Arial', 12))
+        self.rbPlano2 = QRadioButton('Coronal', self)
+        self.rbPlano2.setFont(QFont('Arial', 12))
+        self.rbPlano3 = QRadioButton('Transversal', self)
+        self.rbPlano3.setFont(QFont('Arial', 12))
+
+        self.buttonGroupLabel.addButton(self.rbLabel1, 1)
+        self.buttonGroupLabel.addButton(self.rbLabel2, 2)
+        self.buttonGroupLabel.addButton(self.rbLabel3, 3)
+        self.buttonGroupLabel.addButton(self.rbLabel4, 4)
+        self.buttonGroupLabel.addButton(self.rbLabel5, 5)
+        self.buttonGroupLabel.addButton(self.rbLabel6, 6)
+        self.buttonGroupLabel.addButton(self.rbLabel7, 7)
+        self.buttonGroupLabel.addButton(self.rbLabel8, 8)
+        self.buttonGroupLabel.addButton(self.rbLabel9, 9)
+        self.buttonGroupLabel.addButton(self.rbLabel10, 10)
+        self.buttonGroupLabel.addButton(self.rbLabel11, 11)
+        self.buttonGroupLabel.addButton(self.rbLabel12, 12)
+        self.buttonGroupPlane.addButton(self.rbPlano1, 1)
+        self.buttonGroupPlane.addButton(self.rbPlano2, 2)
+        self.buttonGroupPlane.addButton(self.rbPlano3, 3)
 
         # Create submit button
         submit_button = QPushButton('Submit', self)
@@ -148,33 +169,42 @@ class Window(QWidget):
         vbox.addLayout(title_layout)
         vbox.addLayout(label_layout)
 
+        # Create dataset radiobuttons
         cont = 0
         for diretoriaDataset in DiretoriasDataSets:
-            setattr(Window, f"attr_{'cbDataset' + str(cont+1)}", QCheckBox(os.path.basename(diretoriaDataset).split('/')[-1], self))
-            cbDataset = getattr(Window, 'attr_cbDataset' + str(cont+1))
-            cbDataset.setFont(QFont('Arial', 12))
-            vbox.addWidget(cbDataset)
+            setattr(Window, f"attr_{'rbDataset' + str(cont + 1)}",
+                    QRadioButton(os.path.basename(diretoriaDataset).split('/')[-1], self))
+            rbDataset = getattr(Window, 'attr_rbDataset' + str(cont + 1))
+            rbDataset.setFont(QFont('Arial', 12))
+            self.buttonGroupDataset.addButton(rbDataset, cont + 1)
+            vbox.addWidget(rbDataset)
             self.numDatasets = self.numDatasets + 1
             cont = cont + 1
 
+        # Add check boxes to vbox.
         vbox.addLayout(label_layout1)
-        vbox.addWidget(self.cbLabel1)
-        vbox.addWidget(self.cbLabel2)
-        vbox.addWidget(self.cbLabel3)
-        vbox.addWidget(self.cbLabel4)
-        vbox.addWidget(self.cbLabel5)
-        vbox.addWidget(self.cbLabel6)
-        vbox.addWidget(self.cbLabel7)
-        vbox.addWidget(self.cbLabel8)
-        vbox.addWidget(self.cbLabel9)
-        vbox.addWidget(self.cbLabel10)
-        vbox.addWidget(self.cbLabel11)
-        vbox.addWidget(self.cbLabel12)
+        vbox.addWidget(self.rbLabel1)
+        vbox.addWidget(self.rbLabel2)
+        vbox.addWidget(self.rbLabel3)
+        vbox.addWidget(self.rbLabel4)
+        vbox.addWidget(self.rbLabel5)
+        vbox.addWidget(self.rbLabel6)
+        vbox.addWidget(self.rbLabel7)
+        vbox.addWidget(self.rbLabel8)
+        vbox.addWidget(self.rbLabel9)
+        vbox.addWidget(self.rbLabel10)
+        vbox.addWidget(self.rbLabel11)
+        vbox.addWidget(self.rbLabel12)
         vbox.addLayout(label_layout2)
-        vbox.addWidget(self.cbPlano1)
-        vbox.addWidget(self.cbPlano2)
-        vbox.addWidget(self.cbPlano3)
+        vbox.addWidget(self.rbPlano1)
+        vbox.addWidget(self.rbPlano2)
+        vbox.addWidget(self.rbPlano3)
         vbox.addWidget(submit_button)
+
+        # Radio Buttons selecionados por padrão.
+        self.attr_rbDataset1.setChecked(True)
+        self.rbLabel1.setChecked(True)
+        self.rbPlano1.setChecked(True)
 
         # Create a layout for the main window
         main_layout = QHBoxLayout()
@@ -206,68 +236,48 @@ class Window(QWidget):
         global label
         global plano
         global DiretoriasDataSets
-        aux = 0
 
-        for cont in range(self.numDatasets):
-            cbDataset = getattr(Window, 'attr_cbDataset' + str(cont + 1))
-            if cbDataset.isChecked():
-                dataset = cont
-                aux = aux + 1
-        if aux == 0:
+        # Get checked dataset radio button
+        btnDataset = self.buttonGroupDataset.checkedButton()
+        if btnDataset is not None:
+            dataset = self.buttonGroupDataset.checkedId() - 1  # -1 since the ID starts at 1 but your dataset index starts at 0
+        else:
             dataset = None
             print('No dataset selected')
 
-        if self.cbLabel1.isChecked():
-            label = 1
-        elif self.cbLabel2.isChecked():
-            label = 2
-        elif self.cbLabel3.isChecked():
-            label = 3
-        elif self.cbLabel4.isChecked():
-            label = 4
-        elif self.cbLabel5.isChecked():
-            label = 5
-        elif self.cbLabel6.isChecked():
-            label = 6
-        elif self.cbLabel7.isChecked():
-            label = 7
-        elif self.cbLabel8.isChecked():
-            label = 8
-        elif self.cbLabel9.isChecked():
-            label = 9
-        elif self.cbLabel10.isChecked():
-            label = 10
-        elif self.cbLabel11.isChecked():
-            label = 11
-        elif self.cbLabel12.isChecked():
-            label = 12
+        # Get checked label radio button
+        btnLabel = self.buttonGroupLabel.checkedButton()
+        if btnLabel is not None:
+            label = self.buttonGroupLabel.checkedId()
         else:
             label = None
             print('No label selected')
 
-        if self.cbPlano1.isChecked():
-            plano = 1
-        elif self.cbPlano2.isChecked():
-            plano = 2
-        elif self.cbPlano3.isChecked():
-            plano = 3
+        # Get checked plane radio button
+        btnPlane = self.buttonGroupPlane.checkedButton()
+        if btnPlane is not None:
+            plano = self.buttonGroupPlane.checkedId()
         else:
             plano = None
             print('No plan selected')
 
-        binaryThreshold = binaryThresholdFun(dataSets[dataset], label)
-        writeItkImage(binaryThreshold.GetOutput())
+        if dataset is not None and label is not None:  # make sure both dataset and label are selected
+            binaryThreshold = binaryThresholdFun(dataSets[dataset], label)
+            writeItkImage(binaryThreshold.GetOutput())
 
-        match plano:
-            case 1:
-                displayVtkFileSagittal(renderer, os.path.join(DiretoriaItkOutput, "output.vtk"), DiretoriasDataSets[dataset],
-                                       self.vtkWidget)
-            case 2:
-                displayVtkFileCoronal(renderer, os.path.join(DiretoriaItkOutput, "output.vtk"), DiretoriasDataSets[dataset],
-                                      self.vtkWidget)
-            case 3:
-                displayVtkFileTransverse(renderer, os.path.join(DiretoriaItkOutput, "output.vtk"), DiretoriasDataSets[dataset],
-                                         self.vtkWidget)
+            match plano:
+                case 1:
+                    displayVtkFileSagittal(renderer, os.path.join(DiretoriaItkOutput, "output.vtk"),
+                                           DiretoriasDataSets[dataset],
+                                           self.vtkWidget)
+                case 2:
+                    displayVtkFileCoronal(renderer, os.path.join(DiretoriaItkOutput, "output.vtk"),
+                                          DiretoriasDataSets[dataset],
+                                          self.vtkWidget)
+                case 3:
+                    displayVtkFileTransverse(renderer, os.path.join(DiretoriaItkOutput, "output.vtk"),
+                                             DiretoriasDataSets[dataset],
+                                             self.vtkWidget)
 
 def binaryThresholdFun(itkImage, label):
 
