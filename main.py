@@ -294,6 +294,7 @@ def writeItkImage(itkImage):
 def displayVtkFileSagittal(renderer, vtkDir, vtkDir1, vtkWidget):
     # Corte sagital.
     global sagittalSlice
+    sagittalSlice = 0
 
     # VTK Image reader.
     vtkReader1 = vtk.vtkStructuredPointsReader()
@@ -323,6 +324,7 @@ def displayVtkFileSagittal(renderer, vtkDir, vtkDir1, vtkWidget):
 
     # Construção do renderizador da janela vtk.
     render_window.AddRenderer(renderer)
+    interactor.RemoveObservers('RightButtonPressEvent')
 
     # Definem-se as interações do corte sagital.
     sagittal_widget.SetInteractor(interactor)
@@ -349,6 +351,7 @@ def displayVtkFileSagittal(renderer, vtkDir, vtkDir1, vtkWidget):
 def displayVtkFileCoronal(renderer, vtkDir, vtkDir1, vtkWidget):
     # Corte coronal.
     global coronalSlice
+    coronalSlice = 0
 
     # VTK Image reader.
     vtkReader1 = vtk.vtkStructuredPointsReader()
@@ -378,6 +381,7 @@ def displayVtkFileCoronal(renderer, vtkDir, vtkDir1, vtkWidget):
 
     # Construção do renderizador da janela vtk.
     render_window.AddRenderer(renderer)
+    interactor.RemoveObservers('RightButtonPressEvent')
 
     # Definem-se as interações do corte coronal.
     coronal_widget.SetInteractor(interactor)
@@ -404,6 +408,7 @@ def displayVtkFileCoronal(renderer, vtkDir, vtkDir1, vtkWidget):
 def displayVtkFileTransverse(renderer, vtkDir, vtkDir1, vtkWidget):
     # Corte transversal.
     global transverseSlice
+    transverseSlice = 0
 
     # VTK Image reader.
     vtkReader1 = vtk.vtkStructuredPointsReader()
@@ -433,6 +438,7 @@ def displayVtkFileTransverse(renderer, vtkDir, vtkDir1, vtkWidget):
 
     # Construção do renderizador da janela vtk.
     render_window.AddRenderer(renderer)
+    interactor.RemoveObservers('RightButtonPressEvent')
 
     # Definem-se as interações do corte transversal.
     transverse_widget.SetInteractor(interactor)
