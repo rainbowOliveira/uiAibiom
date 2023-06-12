@@ -604,7 +604,6 @@ def change_slice_sagittal(renderer_window, sagittal_widget):
                 sagittalSlice = sagittalSlice + 1
                 sagittal_widget.SetSliceIndex(sagittalSlice)
                 renderer_window.Render()
-                print(key)
 
         else:
             if (key == "Left"):
@@ -612,7 +611,6 @@ def change_slice_sagittal(renderer_window, sagittal_widget):
                     sagittalSlice = sagittalSlice - 1
                     sagittal_widget.SetSliceIndex(sagittalSlice)
                     renderer_window.Render()
-                    print(key)
     return change_slice_sagittal_func
 
 def change_slice_coronal(renderer_window, coronal_widget):
@@ -627,7 +625,6 @@ def change_slice_coronal(renderer_window, coronal_widget):
                 coronalSlice = coronalSlice + 1
                 coronal_widget.SetSliceIndex(coronalSlice)
                 renderer_window.Render()
-                print(key)
 
         else:
             if (key == "Left"):
@@ -635,7 +632,6 @@ def change_slice_coronal(renderer_window, coronal_widget):
                     coronalSlice = coronalSlice - 1
                     coronal_widget.SetSliceIndex(coronalSlice)
                     renderer_window.Render()
-                    print(key)
     return change_slice_coronal_func
 
 
@@ -651,7 +647,6 @@ def change_slice_transverse(renderer_window, transverse_widget):
                 transverseSlice = transverseSlice + 1
                 transverse_widget.SetSliceIndex(transverseSlice)
                 renderer_window.Render()
-                print(key)
 
         else:
             if (key == "Left"):
@@ -659,7 +654,6 @@ def change_slice_transverse(renderer_window, transverse_widget):
                     transverseSlice = transverseSlice - 1
                     transverse_widget.SetSliceIndex(transverseSlice)
                     renderer_window.Render()
-                    print(key)
     return change_slice_transverse_func
 
 if __name__ == "__main__":
