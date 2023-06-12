@@ -3,6 +3,7 @@ import vtk
 import os
 from os import listdir
 import sys
+import numpy as np
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -240,7 +241,7 @@ class Window(QWidget):
         # Get checked dataset radio button
         btnDataset = self.buttonGroupDataset.checkedButton()
         if btnDataset is not None:
-            dataset = self.buttonGroupDataset.checkedId() - 1  # -1 since the ID starts at 1 but your dataset index starts at 0
+            dataset = self.buttonGroupDataset.checkedId() - 1
         else:
             dataset = None
             print('No dataset selected')
@@ -263,21 +264,22 @@ class Window(QWidget):
 
         if dataset is not None and label is not None:  # make sure both dataset and label are selected
             binaryThreshold = binaryThresholdFun(dataSets[dataset], label)
+            volume = calculate_volume(binaryThreshold)
             writeItkImage(binaryThreshold.GetOutput())
 
             match plano:
                 case 1:
                     displayVtkFileSagittal(renderer, os.path.join(DiretoriaItkOutput, "output.vtk"),
                                            DiretoriasDataSets[dataset],
-                                           self.vtkWidget)
+                                           self.vtkWidget, volume)
                 case 2:
                     displayVtkFileCoronal(renderer, os.path.join(DiretoriaItkOutput, "output.vtk"),
                                           DiretoriasDataSets[dataset],
-                                          self.vtkWidget)
+                                          self.vtkWidget, volume)
                 case 3:
                     displayVtkFileTransverse(renderer, os.path.join(DiretoriaItkOutput, "output.vtk"),
                                              DiretoriasDataSets[dataset],
-                                             self.vtkWidget)
+                                             self.vtkWidget, volume)
 
 def binaryThresholdFun(itkImage, label):
 
@@ -295,13 +297,29 @@ def binaryThresholdFun(itkImage, label):
 
     return binaryThreshold
 
+def calculate_volume(binaryThreshold):
+    # Convert the output image of the binaryThreshold filter to a NumPy array
+    image_array = itk.array_from_image(binaryThreshold.GetOutput())
+
+    # Count the number of voxels that are 1 (i.e., part of the structure)
+    structure_voxels = np.count_nonzero(image_array)
+
+    # Get the volume of a single voxel
+    voxel_volume = np.prod(binaryThreshold.GetOutput().GetSpacing())
+
+    # Calculate the volume of the structure
+    structure_volume = structure_voxels * voxel_volume
+
+    return structure_volume
+
+
 def writeItkImage(itkImage):
 
     writer.SetInput(itkImage)
     writer.SetFileName(os.path.join(DiretoriaItkOutput, "output.vtk"))
     writer.Update()
 
-def displayVtkFileSagittal(renderer, vtkDir, vtkDir1, vtkWidget):
+def displayVtkFileSagittal(renderer, vtkDir, vtkDir1, vtkWidget, volume):
     # Corte sagital.
     global sagittalSlice
     sagittalSlice = 0
@@ -325,12 +343,23 @@ def displayVtkFileSagittal(renderer, vtkDir, vtkDir1, vtkWidget):
     # Aplicam-se os Outline e Contour Filter à imagem 'output.vtk'.
     actor1, actor2 = outLineAndContourFilters(vtkDir)
 
+    # Criação do texto de anotação.
+    text_actor = vtk.vtkTextActor()
+    # Configuração do texto.
+    text_actor.SetInput(f"Volume: {round(volume/1000, 1)} cm^3")
+    # Configuração da cor do texto (branco).
+    text_actor.GetTextProperty().SetColor(1, 1, 1)
+    # Configuração da posição do texto na tela.
+    text_actor.SetDisplayPosition(10, 10)
+
     # Define-se a cor do background da janela vtk.
     renderer.SetBackground(0.25, 0.25, 0.25)
     # Adiciona-se o actor OutLine à janela vtk.
     renderer.AddActor(actor1)
     # Adiciona-se o actor Contour à janela vtk.
     renderer.AddActor(actor2)
+    # Adicionando o ator do texto ao renderizador.
+    renderer.AddActor(text_actor)
 
     # Construção do renderizador da janela vtk.
     render_window.AddRenderer(renderer)
@@ -358,7 +387,7 @@ def displayVtkFileSagittal(renderer, vtkDir, vtkDir1, vtkWidget):
     render_window.Render()
     interactor.Start()
 
-def displayVtkFileCoronal(renderer, vtkDir, vtkDir1, vtkWidget):
+def displayVtkFileCoronal(renderer, vtkDir, vtkDir1, vtkWidget, volume):
     # Corte coronal.
     global coronalSlice
     coronalSlice = 0
@@ -382,12 +411,23 @@ def displayVtkFileCoronal(renderer, vtkDir, vtkDir1, vtkWidget):
     # Aplicam-se os Outline e Contour Filter à imagem 'output.vtk'.
     actor1, actor2 = outLineAndContourFilters(vtkDir)
 
+    # Criação do texto de anotação.
+    text_actor = vtk.vtkTextActor()
+    # Configuração do texto.
+    text_actor.SetInput(f"Volume: {round(volume/1000, 1)} cm^3")
+    # Configuração da cor do texto (branco).
+    text_actor.GetTextProperty().SetColor(1, 1, 1)
+    # Configuração da posição do texto na tela.
+    text_actor.SetDisplayPosition(10, 10)
+
     # Define-se a cor do background da janela vtk.
     renderer.SetBackground(0.25, 0.25, 0.25)
     # Adiciona-se o actor OutLine à janela vtk.
     renderer.AddActor(actor1)
     # Adiciona-se o actor Contour à janela vtk.
     renderer.AddActor(actor2)
+    # Adicionando o ator do texto ao renderizador.
+    renderer.AddActor(text_actor)
 
     # Construção do renderizador da janela vtk.
     render_window.AddRenderer(renderer)
@@ -415,7 +455,7 @@ def displayVtkFileCoronal(renderer, vtkDir, vtkDir1, vtkWidget):
     render_window.Render()
     interactor.Start()
 
-def displayVtkFileTransverse(renderer, vtkDir, vtkDir1, vtkWidget):
+def displayVtkFileTransverse(renderer, vtkDir, vtkDir1, vtkWidget, volume):
     # Corte transversal.
     global transverseSlice
     transverseSlice = 0
@@ -439,12 +479,23 @@ def displayVtkFileTransverse(renderer, vtkDir, vtkDir1, vtkWidget):
     # Aplicam-se os Outline e Contour Filter à imagem 'output.vtk'.
     actor1, actor2 = outLineAndContourFilters(vtkDir)
 
+    # Criação do texto de anotação.
+    text_actor = vtk.vtkTextActor()
+    # Configuração do texto.
+    text_actor.SetInput(f"Volume: {round(volume/1000, 1)} cm^3")
+    # Configuração da cor do texto (branco).
+    text_actor.GetTextProperty().SetColor(1, 1, 1)
+    # Configuração da posição do texto na tela.
+    text_actor.SetDisplayPosition(10, 10)
+
     # Define-se a cor do background da janela vtk.
     renderer.SetBackground(0.25, 0.25, 0.25)
     # Adiciona-se o actor OutLine à janela vtk.
     renderer.AddActor(actor1)
     # Adiciona-se o actor Contour à janela vtk.
     renderer.AddActor(actor2)
+    # Adicionando o ator do texto ao renderizador.
+    renderer.AddActor(text_actor)
 
     # Construção do renderizador da janela vtk.
     render_window.AddRenderer(renderer)
