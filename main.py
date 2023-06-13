@@ -28,6 +28,12 @@ writer = itk.ImageFileWriter[ImageType].New()
 colors = vtk.vtkNamedColors()
 # VTK renderer.
 renderer = vtk.vtkRenderer()
+# VTK sagittal widget.
+sagittal_widget = vtk.vtkImagePlaneWidget()
+# VTK coronal widget.
+coronal_widget = vtk.vtkImagePlaneWidget()
+# VTK transverse widget.
+transverse_widget = vtk.vtkImagePlaneWidget()
 
 # Initial Sagittal Slice.
 sagittalSlice = 0
@@ -322,14 +328,13 @@ def writeItkImage(itkImage):
 def displayVtkFileSagittal(renderer, vtkDir, vtkDir1, vtkWidget, volume):
     # Corte sagital.
     global sagittalSlice
+    global sagittal_widget
     sagittalSlice = 0
 
     # VTK Image reader.
     vtkReader1 = vtk.vtkStructuredPointsReader()
     # VTK renderer window.
     render_window = vtkWidget.GetRenderWindow()
-    # VTK coronal sagittal widget.
-    sagittal_widget = vtk.vtkImagePlaneWidget()
     # VTK renderer_window_interactor.
     interactor = render_window.GetInteractor()
 
@@ -376,6 +381,7 @@ def displayVtkFileSagittal(renderer, vtkDir, vtkDir1, vtkWidget, volume):
     # Define-se a janela vtk do widget corte sagital.
     sagittal_widget.SetDefaultRenderer(renderer)
     # Disponibiliza-se o widget corte sagital.
+    sagittal_widget.Off()
     sagittal_widget.On()
 
     # Vincula-se a 'change_slice_sagittal_func' ao evento de pressionar uma seta do teclado.
@@ -390,14 +396,13 @@ def displayVtkFileSagittal(renderer, vtkDir, vtkDir1, vtkWidget, volume):
 def displayVtkFileCoronal(renderer, vtkDir, vtkDir1, vtkWidget, volume):
     # Corte coronal.
     global coronalSlice
+    global coronal_widget
     coronalSlice = 0
 
     # VTK Image reader.
     vtkReader1 = vtk.vtkStructuredPointsReader()
     # VTK renderer window.
     render_window = vtkWidget.GetRenderWindow()
-    # VTK coronal sagittal widget.
-    coronal_widget = vtk.vtkImagePlaneWidget()
     # VTK renderer_window_interactor.
     interactor = render_window.GetInteractor()
 
@@ -444,6 +449,7 @@ def displayVtkFileCoronal(renderer, vtkDir, vtkDir1, vtkWidget, volume):
     # Define-se a janela vtk do widget corte coronal.
     coronal_widget.SetDefaultRenderer(renderer)
     # Disponibiliza-se o widget corte coronal.
+    coronal_widget.Off()
     coronal_widget.On()
 
     # Vincula-se a 'change_slice_coronal_func' ao evento de pressionar uma seta do teclado.
@@ -458,14 +464,13 @@ def displayVtkFileCoronal(renderer, vtkDir, vtkDir1, vtkWidget, volume):
 def displayVtkFileTransverse(renderer, vtkDir, vtkDir1, vtkWidget, volume):
     # Corte transversal.
     global transverseSlice
+    global transverse_widget
     transverseSlice = 0
 
     # VTK Image reader.
     vtkReader1 = vtk.vtkStructuredPointsReader()
     # VTK renderer window.
     render_window = vtkWidget.GetRenderWindow()
-    # VTK coronal sagittal widget.
-    transverse_widget = vtk.vtkImagePlaneWidget()
     # VTK renderer_window_interactor.
     interactor = render_window.GetInteractor()
 
@@ -512,6 +517,7 @@ def displayVtkFileTransverse(renderer, vtkDir, vtkDir1, vtkWidget, volume):
     # Define-se a janela vtk do widget corte transversal.
     transverse_widget.SetDefaultRenderer(renderer)
     # Disponibiliza-se o widget corte transversal.
+    transverse_widget.Off()
     transverse_widget.On()
 
     # Vincula-se a 'change_slice_transverse_func' ao evento de pressionar uma seta do teclado.
