@@ -74,13 +74,14 @@ def binaryThresholdFun(itkImage, label):
     outsideValue = 0
     insideValue = 1
 
-    # ITK filters.
     binaryThreshold = itk.BinaryThresholdImageFilter[ImageType, ImageType].New()
+
+    # ITK filters.
+    binaryThreshold.SetInput(itkImage)
     binaryThreshold.SetLowerThreshold(label)
     binaryThreshold.SetUpperThreshold(label)
     binaryThreshold.SetOutsideValue(outsideValue)
     binaryThreshold.SetInsideValue(insideValue)
-    binaryThreshold.SetInput(itkImage)
     binaryThreshold.Update()
 
     return binaryThreshold
@@ -703,7 +704,7 @@ def change_slice_transverse(renderer_window, transverse_widget):
     return change_slice_transverse_func
 
 if __name__ == "__main__":
-
+    itk.BinaryThresholdImageFilter[ImageType, ImageType].New()
     carregarDiretoriasDataSets()
     carregarDataSets()
 
