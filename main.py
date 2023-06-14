@@ -55,8 +55,6 @@ def carregarDiretoriasDataSets():
     # Carregam-se as diretorias de todos os datasets.
     for diretoriaDataSet in listdir(DiretoriaDataSets):
         DiretoriasDataSets.append(os.path.join(DiretoriaDataSets, diretoriaDataSet))
-    print(DiretoriasDataSets)
-
 
 def carregarDataSets():
 
@@ -66,7 +64,6 @@ def carregarDataSets():
         itkReader.SetFileName(diretoriaDataSet)
         itkReader.Update()
         dataSets.append(itkReader.GetOutput())
-    print(dataSets)
 
 def binaryThresholdFun(itkImage, label):
 
@@ -154,9 +151,9 @@ class Window(QWidget):
         self.rbLabel5.setFont(QFont('Arial', 12))
         self.rbLabel6 = QRadioButton('Tálamus', self)
         self.rbLabel6.setFont(QFont('Arial', 12))
-        self.rbLabel7 = QRadioButton('Mid Brain', self)
+        self.rbLabel7 = QRadioButton('Mesencéfalo', self)
         self.rbLabel7.setFont(QFont('Arial', 12))
-        self.rbLabel8 = QRadioButton('Pons', self)
+        self.rbLabel8 = QRadioButton('Ponte de Varólio', self)
         self.rbLabel8.setFont(QFont('Arial', 12))
         self.rbLabel9 = QRadioButton('Medula', self)
         self.rbLabel9.setFont(QFont('Arial', 12))
@@ -193,7 +190,9 @@ class Window(QWidget):
         submit_button = QPushButton('Submit', self)
         submit_button.setFont(QFont('Arial', 12))
         submit_button.setGeometry(QRect(140, 150, 120, 40))
-        submit_button.setStyleSheet("background-color: #4CAF50; color: white; border-radius: 10px; font-size: 30px;")
+        submit_button.setStyleSheet(
+            "QPushButton { background-color: #4CAF50; color: white; border-radius: 10px; font-size: 30px; }"
+            "QPushButton:pressed { background-color: #388E3C; }")
         submit_button.clicked.connect(self.submit)
 
         # Create horizontal layout for labels
