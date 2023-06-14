@@ -69,6 +69,44 @@ def carregarDataSets():
         dataSets.append(itkReader.GetOutput())
     print(dataSets)
 
+def binaryThresholdFun(itkImage, label):
+
+    outsideValue = 0
+    insideValue = 1
+
+    # ITK filters.
+    binaryThreshold = itk.BinaryThresholdImageFilter[ImageType, ImageType].New()
+    binaryThreshold.SetLowerThreshold(label)
+    binaryThreshold.SetUpperThreshold(label)
+    binaryThreshold.SetOutsideValue(outsideValue)
+    binaryThreshold.SetInsideValue(insideValue)
+    binaryThreshold.SetInput(itkImage)
+    binaryThreshold.Update()
+
+    return binaryThreshold
+
+def calculate_volume(binaryThreshold):
+    # Convert the output image of the binaryThreshold filter to a NumPy array
+    image_array = itk.array_from_image(binaryThreshold.GetOutput())
+
+    # Count the number of voxels that are 1 (i.e., part of the structure)
+    structure_voxels = np.count_nonzero(image_array)
+
+    # Get the volume of a single voxel
+    voxel_volume = np.prod(binaryThreshold.GetOutput().GetSpacing())
+
+    # Calculate the volume of the structure
+    structure_volume = structure_voxels * voxel_volume
+
+    return structure_volume
+
+
+def writeItkImage(itkImage):
+
+    writer.SetInput(itkImage)
+    writer.SetFileName(os.path.join(DiretoriaItkOutput, "output.vtk"))
+    writer.Update()
+
 class Window(QWidget):
 
     def __init__(self):
@@ -287,48 +325,11 @@ class Window(QWidget):
                                              DiretoriasDataSets[dataset],
                                              self.vtkWidget, volume)
 
-def binaryThresholdFun(itkImage, label):
-
-    outsideValue = 0
-    insideValue = 1
-
-    # ITK filters.
-    binaryThreshold = itk.BinaryThresholdImageFilter[ImageType, ImageType].New()
-    binaryThreshold.SetLowerThreshold(label)
-    binaryThreshold.SetUpperThreshold(label)
-    binaryThreshold.SetOutsideValue(outsideValue)
-    binaryThreshold.SetInsideValue(insideValue)
-    binaryThreshold.SetInput(itkImage)
-    binaryThreshold.Update()
-
-    return binaryThreshold
-
-def calculate_volume(binaryThreshold):
-    # Convert the output image of the binaryThreshold filter to a NumPy array
-    image_array = itk.array_from_image(binaryThreshold.GetOutput())
-
-    # Count the number of voxels that are 1 (i.e., part of the structure)
-    structure_voxels = np.count_nonzero(image_array)
-
-    # Get the volume of a single voxel
-    voxel_volume = np.prod(binaryThreshold.GetOutput().GetSpacing())
-
-    # Calculate the volume of the structure
-    structure_volume = structure_voxels * voxel_volume
-
-    return structure_volume
-
-
-def writeItkImage(itkImage):
-
-    writer.SetInput(itkImage)
-    writer.SetFileName(os.path.join(DiretoriaItkOutput, "output.vtk"))
-    writer.Update()
-
 def displayVtkFileSagittal(renderer, vtkDir, vtkDir1, vtkWidget, volume):
     # Corte sagital.
     global sagittalSlice
     global sagittal_widget
+    global label
     sagittalSlice = 0
 
     # VTK Image reader.
@@ -532,6 +533,8 @@ def displayVtkFileTransverse(renderer, vtkDir, vtkDir1, vtkWidget, volume):
 def outLineAndContourFilters(vtkDir):
     # Número de cortes sagitais, coronais e transversais.
     global vtkDims
+    global label
+    global contourFilter
 
     # VTK Image reader.
     vtkReader = vtk.vtkStructuredPointsReader()
@@ -576,6 +579,8 @@ def outLineAndContourFilters(vtkDir):
     mapper2 = vtk.vtkPolyDataMapper()
     # Contrução do Contour mapper a partir do output do Contour Filter.
     mapper2.SetInputData(isosurface)
+    # Evita-se que o mapper mapeie valores escalares para cores.
+    mapper2.ScalarVisibilityOff()
 
     # Inicializa-se o actor OutLine.
     actor1 = vtk.vtkActor()
@@ -590,10 +595,45 @@ def outLineAndContourFilters(vtkDir):
     actor2 = vtk.vtkActor()
     # Contrução do actor Contour através do Contour mapper.
     actor2.SetMapper(mapper2)
-    # Define-se a cor do actor Contour.
-    actor2.GetProperty().SetColor(1, 1, 0)  # RGB
-    # Define-se a opacidade do actor Contour.
     actor2.GetProperty().SetOpacity(1)
+
+    # Define-se a cor do actor Contour.
+    if label == 1:
+        actor2.GetProperty().SetDiffuseColor(1, 0, 0)
+        actor2.GetProperty().SetColor(1, 0, 0)
+    elif label == 2:
+        actor2.GetProperty().SetDiffuseColor(0, 1, 0)
+        actor2.GetProperty().SetColor(0, 1, 0)
+    elif label == 3:
+        actor2.GetProperty().SetDiffuseColor(0, 0, 1)
+        actor2.GetProperty().SetColor(0, 0, 1)
+    elif label == 4:
+        actor2.GetProperty().SetDiffuseColor(1, 1, 0)
+        actor2.GetProperty().SetColor(1, 1, 0)
+    elif label == 5:
+        actor2.GetProperty().SetDiffuseColor(0.678, 0.847, 0.902)
+        actor2.GetProperty().SetColor(0.678, 0.847, 0.902)
+    elif label == 6:
+        actor2.GetProperty().SetDiffuseColor(1.0, 0.412, 0.706)
+        actor2.GetProperty().SetColor(1.0, 0.412, 0.706)
+    elif label == 7:
+        actor2.GetProperty().SetDiffuseColor(1.0, 0.647, 0.0)
+        actor2.GetProperty().SetColor(1.0, 0.647, 0.0)
+    elif label == 8:
+        actor2.GetProperty().SetDiffuseColor(0.647, 0.165, 0.165)
+        actor2.GetProperty().SetColor(0.647, 0.165, 0.165)
+    elif label == 9:
+        actor2.GetProperty().SetDiffuseColor(1.0, 0.874, 0.769)
+        actor2.GetProperty().SetColor(1.0, 0.874, 0.769)
+    elif label == 10:
+        actor2.GetProperty().SetDiffuseColor(0.0, 1.0, 1.0)
+        actor2.GetProperty().SetColor(0.0, 1.0, 1.0)
+    elif label == 11:
+        actor2.GetProperty().SetDiffuseColor(0.0, 0.392, 0.0)
+        actor2.GetProperty().SetColor(0.0, 0.392, 0.0)
+    elif label == 12:
+        actor2.GetProperty().SetDiffuseColor(0.706, 0.0, 0.353)
+        actor2.GetProperty().SetColor(0.706, 0.0, 0.353)
 
     # Retornam-se os actores dos filtros aplicados.
     return actor1, actor2
