@@ -50,7 +50,6 @@ dataset = None
 label = None
 plano = None
 
-
 def carregarDiretoriasDataSets():
 
     # Carregam-se as diretorias de todos os datasets.
@@ -89,13 +88,10 @@ def binaryThresholdFun(itkImage, label):
 def calculate_volume(binaryThreshold):
     # Convert the output image of the binaryThreshold filter to a NumPy array
     image_array = itk.array_from_image(binaryThreshold.GetOutput())
-
     # Count the number of voxels that are 1 (i.e., part of the structure)
     structure_voxels = np.count_nonzero(image_array)
-
     # Get the volume of a single voxel
     voxel_volume = np.prod(binaryThreshold.GetOutput().GetSpacing())
-
     # Calculate the volume of the structure
     structure_volume = structure_voxels * voxel_volume
 
@@ -704,6 +700,7 @@ def change_slice_transverse(renderer_window, transverse_widget):
     return change_slice_transverse_func
 
 if __name__ == "__main__":
+
     itk.BinaryThresholdImageFilter[ImageType, ImageType].New()
     carregarDiretoriasDataSets()
     carregarDataSets()
