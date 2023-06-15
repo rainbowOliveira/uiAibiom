@@ -12,7 +12,6 @@ from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 # Estrutura do projeto.
 project_dir = os.getcwd()
 DiretoriaDataSets = os.path.join(project_dir, "DataSets")
-DiretoriaItkOutput = os.path.join(project_dir, "ItkOutput")
 DiretoriasDataSets = []
 
 # ITK Image type.
@@ -41,6 +40,8 @@ sagittalSlice = 0
 coronalSlice = 0
 # Initial Transverse Slice.
 transverseSlice = 0
+# Dimensões da imagem selecionada.
+vtkDims = []
 
 # Lista que armazena os itk datasets.
 dataSets = []
@@ -94,12 +95,21 @@ def calculate_volume(binaryThreshold):
 
     return structure_volume
 
+def itkToVtk(itkImage):
+    numpyArray = itk.GetArrayFromImage(itkImage)
+    importer = vtk.vtkImageImport()
+    importer.SetDataSpacing(itkImage.GetSpacing()[0], itkImage.GetSpacing()[1],
+                            itkImage.GetSpacing()[2])
+    importer.SetDataOrigin(itkImage.GetOrigin()[0], itkImage.GetOrigin()[1],
+                           itkImage.GetOrigin()[2])
+    importer.SetWholeExtent(0, numpyArray.shape[2] - 1, 0, numpyArray.shape[1] - 1, 0, numpyArray.shape[0] - 1)
+    importer.SetDataExtentToWholeExtent()
+    importer.SetDataScalarTypeToUnsignedShort()
+    importer.SetNumberOfScalarComponents(1)
+    importer.CopyImportVoidPointer(numpyArray, len(numpyArray.tobytes()))
+    importer.Update()
 
-def writeItkImage(itkImage):
-
-    writer.SetInput(itkImage)
-    writer.SetFileName(os.path.join(DiretoriaItkOutput, "output.vtk"))
-    writer.Update()
+    return importer
 
 class Window(QWidget):
 
@@ -277,6 +287,7 @@ class Window(QWidget):
         global label
         global plano
         global DiretoriasDataSets
+        global vtkDims
 
         # Get checked dataset radio button
         btnDataset = self.buttonGroupDataset.checkedButton()
@@ -284,7 +295,6 @@ class Window(QWidget):
             dataset = self.buttonGroupDataset.checkedId() - 1
         else:
             dataset = None
-            print('No dataset selected')
 
         # Get checked label radio button
         btnLabel = self.buttonGroupLabel.checkedButton()
@@ -292,7 +302,6 @@ class Window(QWidget):
             label = self.buttonGroupLabel.checkedId()
         else:
             label = None
-            print('No label selected')
 
         # Get checked plane radio button
         btnPlane = self.buttonGroupPlane.checkedButton()
@@ -300,36 +309,31 @@ class Window(QWidget):
             plano = self.buttonGroupPlane.checkedId()
         else:
             plano = None
-            print('No plan selected')
 
         if dataset is not None and label is not None:  # make sure both dataset and label are selected
             binaryThreshold = binaryThresholdFun(dataSets[dataset], label)
             volume = calculate_volume(binaryThreshold)
-            writeItkImage(binaryThreshold.GetOutput())
+
+            vtkImage1 = itkToVtk(dataSets[dataset])
+            vtkImage2 = itkToVtk(binaryThreshold.GetOutput())
+
+            vtkDims = vtkImage1.GetOutput().GetDimensions()
 
             match plano:
                 case 1:
-                    displayVtkFileSagittal(renderer, os.path.join(DiretoriaItkOutput, "output.vtk"),
-                                           DiretoriasDataSets[dataset],
-                                           self.vtkWidget, volume)
+                    displayVtkFileSagittal(renderer, self.vtkWidget, volume, vtkImage1.GetOutputPort(), vtkImage2.GetOutputPort())
                 case 2:
-                    displayVtkFileCoronal(renderer, os.path.join(DiretoriaItkOutput, "output.vtk"),
-                                          DiretoriasDataSets[dataset],
-                                          self.vtkWidget, volume)
+                    displayVtkFileCoronal(renderer, self.vtkWidget, volume, vtkImage1.GetOutputPort(), vtkImage2.GetOutputPort())
                 case 3:
-                    displayVtkFileTransverse(renderer, os.path.join(DiretoriaItkOutput, "output.vtk"),
-                                             DiretoriasDataSets[dataset],
-                                             self.vtkWidget, volume)
+                    displayVtkFileTransverse(renderer, self.vtkWidget, volume, vtkImage1.GetOutputPort(), vtkImage2.GetOutputPort())
 
-def displayVtkFileSagittal(renderer, vtkDir, vtkDir1, vtkWidget, volume):
+def displayVtkFileSagittal(renderer, vtkWidget, volume, vtkImage1, vtkImage2):
     # Corte sagital.
     global sagittalSlice
     global sagittal_widget
     global label
     sagittalSlice = 0
 
-    # VTK Image reader.
-    vtkReader1 = vtk.vtkStructuredPointsReader()
     # VTK renderer window.
     render_window = vtkWidget.GetRenderWindow()
     # VTK renderer_window_interactor.
@@ -337,13 +341,8 @@ def displayVtkFileSagittal(renderer, vtkDir, vtkDir1, vtkWidget, volume):
 
     renderer.RemoveAllViewProps()
 
-    # Define-se o caminho até à imagem 'dataset.vtk'.
-    vtkReader1.SetFileName(vtkDir1)
-    # Carrega-se a imagem 'dataset.vtk'.
-    vtkReader1.Update()
-
     # Aplicam-se os Outline e Contour Filter à imagem 'output.vtk'.
-    actor1, actor2 = outLineAndContourFilters(vtkDir)
+    actor1, actor2 = outLineAndContourFilters(vtkImage2)
 
     # Criação do texto de anotação.
     text_actor = vtk.vtkTextActor()
@@ -370,7 +369,7 @@ def displayVtkFileSagittal(renderer, vtkDir, vtkDir1, vtkWidget, volume):
     # Definem-se as interações do corte sagital.
     sagittal_widget.SetInteractor(interactor)
     # Define-se a imagem 'dataset.vtk' como input do widget corte sagital.
-    sagittal_widget.SetInputConnection(vtkReader1.GetOutputPort())
+    sagittal_widget.SetInputConnection(vtkImage1)
     # Define-se a orientação do corte como sagital.
     sagittal_widget.SetPlaneOrientationToXAxes()
     # Define-se a posição inicial do corte sagital.
@@ -390,14 +389,12 @@ def displayVtkFileSagittal(renderer, vtkDir, vtkDir1, vtkWidget, volume):
     render_window.Render()
     interactor.Start()
 
-def displayVtkFileCoronal(renderer, vtkDir, vtkDir1, vtkWidget, volume):
+def displayVtkFileCoronal(renderer, vtkWidget, volume, vtkImage1, vtkImage2):
     # Corte coronal.
     global coronalSlice
     global coronal_widget
     coronalSlice = 0
 
-    # VTK Image reader.
-    vtkReader1 = vtk.vtkStructuredPointsReader()
     # VTK renderer window.
     render_window = vtkWidget.GetRenderWindow()
     # VTK renderer_window_interactor.
@@ -405,13 +402,8 @@ def displayVtkFileCoronal(renderer, vtkDir, vtkDir1, vtkWidget, volume):
 
     renderer.RemoveAllViewProps()
 
-    # Define-se o caminho até à imagem 'dataset.vtk'.
-    vtkReader1.SetFileName(vtkDir1)
-    # Carrega-se a imagem 'dataset.vtk'.
-    vtkReader1.Update()
-
     # Aplicam-se os Outline e Contour Filter à imagem 'output.vtk'.
-    actor1, actor2 = outLineAndContourFilters(vtkDir)
+    actor1, actor2 = outLineAndContourFilters(vtkImage2)
 
     # Criação do texto de anotação.
     text_actor = vtk.vtkTextActor()
@@ -438,7 +430,7 @@ def displayVtkFileCoronal(renderer, vtkDir, vtkDir1, vtkWidget, volume):
     # Definem-se as interações do corte coronal.
     coronal_widget.SetInteractor(interactor)
     # Define-se a imagem 'dataset.vtk' como input do widget corte coronal.
-    coronal_widget.SetInputConnection(vtkReader1.GetOutputPort())
+    coronal_widget.SetInputConnection(vtkImage1)
     # Define-se a orientação do corte como coronal.
     coronal_widget.SetPlaneOrientationToYAxes()
     # Define-se a posição inicial do corte coronal.
@@ -458,14 +450,12 @@ def displayVtkFileCoronal(renderer, vtkDir, vtkDir1, vtkWidget, volume):
     render_window.Render()
     interactor.Start()
 
-def displayVtkFileTransverse(renderer, vtkDir, vtkDir1, vtkWidget, volume):
+def displayVtkFileTransverse(renderer, vtkWidget, volume, vtkImage1, vtkImage2):
     # Corte transversal.
     global transverseSlice
     global transverse_widget
     transverseSlice = 0
 
-    # VTK Image reader.
-    vtkReader1 = vtk.vtkStructuredPointsReader()
     # VTK renderer window.
     render_window = vtkWidget.GetRenderWindow()
     # VTK renderer_window_interactor.
@@ -473,13 +463,8 @@ def displayVtkFileTransverse(renderer, vtkDir, vtkDir1, vtkWidget, volume):
 
     renderer.RemoveAllViewProps()
 
-    # Define-se o caminho até à imagem 'dataset.vtk'.
-    vtkReader1.SetFileName(vtkDir1)
-    # Carrega-se a imagem 'dataset.vtk'.
-    vtkReader1.Update()
-
     # Aplicam-se os Outline e Contour Filter à imagem 'output.vtk'.
-    actor1, actor2 = outLineAndContourFilters(vtkDir)
+    actor1, actor2 = outLineAndContourFilters(vtkImage2)
 
     # Criação do texto de anotação.
     text_actor = vtk.vtkTextActor()
@@ -506,7 +491,7 @@ def displayVtkFileTransverse(renderer, vtkDir, vtkDir1, vtkWidget, volume):
     # Definem-se as interações do corte transversal.
     transverse_widget.SetInteractor(interactor)
     # Define-se a imagem 'dataset.vtk' como input do widget corte transversal.
-    transverse_widget.SetInputConnection(vtkReader1.GetOutputPort())
+    transverse_widget.SetInputConnection(vtkImage1)
     # Define-se a orientação do corte como transversal.
     transverse_widget.SetPlaneOrientationToZAxes()
     # Define-se a posição inicial do corte transversal.
@@ -526,27 +511,16 @@ def displayVtkFileTransverse(renderer, vtkDir, vtkDir1, vtkWidget, volume):
     render_window.Render()
     interactor.Start()
 
-def outLineAndContourFilters(vtkDir):
+def outLineAndContourFilters(vtkImage):
     # Número de cortes sagitais, coronais e transversais.
     global vtkDims
     global label
     global contourFilter
 
-    # VTK Image reader.
-    vtkReader = vtk.vtkStructuredPointsReader()
-
-    # Define-se o caminho até à imagem 'output.vtk'.
-    vtkReader.SetFileName(vtkDir)
-    # Carrega-se a imagem output.vtk.
-    vtkReader.Update()
-
-    # Obtêm-se o número de cortes sagitais, coronais e transversais.
-    vtkDims = vtkReader.GetOutput().GetDimensions()
-
     # Inicializa-se o Outline Filter.
     outlineFilter = vtk.vtkOutlineFilter()
     # Define-se a imagem 'output.vtk' como input do Outline Filter.
-    outlineFilter.SetInputData(vtkReader.GetOutput())
+    outlineFilter.SetInputConnection(vtkImage)
     # Processa-se a imagem ´output.vtk´ com o OutLine Filter.
     outlineFilter.Update()
 
@@ -559,7 +533,7 @@ def outLineAndContourFilters(vtkDir):
     isovalue = 0.5
     contourFilter.SetValue(0, isovalue)
     # Define-se a imagem ´output.vtk´ como input do Contour Filter.
-    contourFilter.SetInputData(vtkReader.GetOutput())
+    contourFilter.SetInputConnection(vtkImage)
     # Processa-se a imagem 'output.vtk' com o Contour Filter.
     contourFilter.Update()
 
@@ -642,7 +616,7 @@ def change_slice_sagittal(renderer_window, sagittal_widget):
         key = obj.GetKeySym()
 
         if (key == "Right"):
-            if (sagittalSlice < vtkDims[0]):
+            if (sagittalSlice < vtkDims[0] - 1):
                 sagittalSlice = sagittalSlice + 1
                 sagittal_widget.SetSliceIndex(sagittalSlice)
                 renderer_window.Render()
@@ -663,7 +637,7 @@ def change_slice_coronal(renderer_window, coronal_widget):
         key = obj.GetKeySym()
 
         if (key == "Right"):
-            if (coronalSlice < vtkDims[1]):
+            if (coronalSlice < vtkDims[1] - 1):
                 coronalSlice = coronalSlice + 1
                 coronal_widget.SetSliceIndex(coronalSlice)
                 renderer_window.Render()
@@ -685,7 +659,7 @@ def change_slice_transverse(renderer_window, transverse_widget):
         key = obj.GetKeySym()
 
         if (key == "Right"):
-            if (transverseSlice < vtkDims[2]):
+            if (transverseSlice < vtkDims[2] - 1):
                 transverseSlice = transverseSlice + 1
                 transverse_widget.SetSliceIndex(transverseSlice)
                 renderer_window.Render()
