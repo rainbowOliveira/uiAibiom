@@ -137,7 +137,7 @@ class Window(QWidget):
         self.label = QLabel('Selecione o dataset:', self)
         self.label.setFont(QFont('Arial', 16))
         self.label.setStyleSheet("color: #ffffff; background-color: #333333; font-size: 16pt;")
-        self.label1 = QLabel('Selecione a label:', self)
+        self.label1 = QLabel('Selecione a estrutura:', self)
         self.label1.setFont(QFont('Arial', 16))
         self.label1.setStyleSheet("color: #ffffff; background-color: #333333; font-size: 16pt;")
         self.label2 = QLabel('Selecione o plano:', self)
